@@ -1,0 +1,279 @@
+#!/usr/bin/env bash
+
+set -e
+
+function usage {
+  echo "Usage: kubectl crossplane stack init STACK_NAME [DIRECTORY]" >&2
+  echo "" >&2
+  echo "DIRECTORY defaults to the current directory." >&2
+}
+
+if [[ $# -lt 1 ]] ; then
+  usage
+  exit 1
+fi
+
+set -x
+
+STACK_NAME=${1}
+INIT_DIR=${2:-$PWD}
+
+# Create dirs
+# Create manifest files
+# Create sample install file
+# Create Dockerfile
+# Create Makefile
+
+function create_dirs {
+  mkdir -p config/stack
+}
+
+function create_manifest {
+  mkdir -p config/stack/manifest
+  touch config/stack/manifest/app.yaml
+  cat > config/stack/manifest/app.yaml <<'EOF'
+EOF
+  touch config/stack/manifest/rbac.yaml
+  cat > config/stack/manifest/rbac.yaml <<'EOF'
+---
+# Put your rbac rules here
+EOF
+  touch config/stack/manifest/install.yaml
+  cat > config/stack/manifest/install.yaml <<EOF
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: "${STACK_NAME}"
+  labels:
+    core.crossplane.io/name: "${STACK_NAME}"
+spec:
+  selector:
+    matchLabels:
+      core.crossplane.io/name: "${STACK_NAME}"
+  replicas: 1
+  template:
+    metadata:
+      name: "${STACK_NAME}-controller"
+      labels:
+        core.crossplane.io/name: "${STACK_NAME}"
+    spec:
+      containers:
+      - name: "${STACK_NAME}-controller"
+        image: "${STACK_NAME}"
+        env:
+        - name: POD_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name
+        - name: POD_NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
+EOF
+}
+
+function create_samples {
+  mkdir -p config/stack/samples
+  cat > config/stack/samples/local.install.stack.yaml <<EOF
+---
+apiVersion: extensions.crossplane.io/v1alpha1
+kind: ExtensionRequest
+metadata:
+  name: "${STACK_NAME}"
+spec:
+  source: localhost:5000
+  package: "${STACK_NAME}"
+EOF
+
+  cat > config/stack/samples/install.stack.yaml <<EOF
+---
+apiVersion: extensions.crossplane.io/v1alpha1
+kind: ExtensionRequest
+metadata:
+  name: "${STACK_NAME}"
+spec:
+  package: "${STACK_NAME}"
+EOF
+}
+
+function create_build {
+  cat > Dockerfile.stack <<'EOF'
+# Build the manager binary
+FROM golang:1.12.5 as builder
+
+WORKDIR /workspace
+# Copy the Go Modules manifests
+COPY go.mod go.mod
+COPY go.sum go.sum
+# cache deps before building and copying source so that we don't need to re-download as much
+# and so that source changes don't invalidate our downloaded layer
+RUN go mod download
+
+# Copy the go source
+COPY main.go main.go
+COPY api/ api/
+COPY controllers/ controllers/
+
+# Build
+RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 GO111MODULE=on go build -a -o manager main.go
+
+# Use alpine as a minimal base image to package the manager binary
+# Alpine is used instead of distroless because the stack manager expects things like `cp` to exist
+FROM alpine:3.7
+WORKDIR /
+COPY extension-package /
+COPY --from=builder /workspace/manager .
+ENTRYPOINT ["/manager"]
+EOF
+
+  cat > Makefile.stack <<'EOF'
+# Image URL to use all building/pushing image targets
+IMG ?= crossplane-examples/wordpress-stack:latest
+# Produce CRDs that work back to Kubernetes 1.11 (no version conversion)
+CRD_OPTIONS ?= "crd:trivialVersions=true"
+
+GO111MODULE ?= on
+export GO111MODULE
+
+# Get the currently used golang install path (in GOPATH/bin, unless GOBIN is set)
+ifeq (,$(shell go env GOBIN))
+GOBIN=$(shell go env GOPATH)/bin
+else
+GOBIN=$(shell go env GOBIN)
+endif
+
+CRD_DIR=config/crd/bases
+LOCAL_OVERRIDES_DIR=config/samples/overrides
+
+EXTENSION_PACKAGE=extension-package
+EXTENSION_PACKAGE_REGISTRY=$(EXTENSION_PACKAGE)/.registry
+EXTENSION_PACKAGE_REGISTRY_SOURCE=config/stack/manifests
+CONFIG_SAMPLES_DIR=config/stack/samples
+
+all: build
+
+################################################
+#
+# Below this until marked otherwise is where
+# most of the build customizations beyond
+# what kubebuilder generates live.
+#
+# Here are some other customizations of note:
+# - Set IMG above to be more specific
+# - Add GO111MODULE=on
+# - Add COPY of stack bundle in Dockerfile
+# - Add some other make variables
+# - Made docker-build recipe work well on MacOS
+#
+################################################
+
+clean: clean-extension-package clean-binary
+.PHONY: clean
+
+clean-extension-package:
+	rm -r $(EXTENSION_PACKAGE)
+.PHONY: clean-extension-package
+
+clean-binary:
+	rm -r bin
+.PHONY: clean-binary
+
+# Initialize the stack bundle folder
+$(EXTENSION_PACKAGE_REGISTRY):
+	mkdir -p $(EXTENSION_PACKAGE_REGISTRY)/resources
+	touch $(EXTENSION_PACKAGE_REGISTRY)/app.yaml $(EXTENSION_PACKAGE_REGISTRY)/install.yaml $(EXTENSION_PACKAGE_REGISTRY)/rbac.yaml
+
+build: manager manifests $(EXTENSION_PACKAGE_REGISTRY)
+	# Copy CRDs over
+	#
+	# The reason this looks complicated is because it is
+	# preserving the original crd filenames and changing
+	# *.yaml to *.crd.yaml.
+	#
+	# An alternate and simpler-looking approach would
+	# be to cat all of the files into a single crd.yaml.
+	find $(CRD_DIR) -type f -name '*.yaml' | \
+		while read filename ; do cat $$filename > \
+		$(EXTENSION_PACKAGE_REGISTRY)/resources/$$( basename $${filename/.yaml/.crd.yaml} ) \
+		; done
+	cp -r $(EXTENSION_PACKAGE_REGISTRY_SOURCE)/* $(EXTENSION_PACKAGE_REGISTRY)
+.PHONY: build
+
+# A local docker registry can be used to publish and consume images locally, which
+# is convenient during development, as it simulates the whole lifecycle of the
+# Stack, end-to-end.
+docker-local-registry:
+	docker run -d -p 5000:5000 --restart=always --name registry registry:2
+.PHONY: docker-local-registry
+
+# Tagging the image with the address of the local registry is a necessary step of
+# publishing the image to the local registry.
+docker-local-tag:
+	docker tag ${IMG} localhost:5000/${IMG}
+.PHONY: docker-local-tag
+
+# When we are developing locally, this target will publish our container image
+# to the local registry.
+docker-local-push: docker-local-tag
+	docker push localhost:5000/${IMG}
+.PHONY: docker-local-push
+
+# Sooo ideally this wouldn't be a single line, but the idea here is that when we're
+# developing locally, we want to use our locally-published container image for the
+# Stack's controller container. The container image is specified in the install
+# yaml for the Stack. This means we need two versions of the install:
+#
+# * One for "regular", production publishing
+# * One for development
+#
+# The way this has been implemented here is by having the base install yaml be the
+# production install, with a yaml patch on the side for use during development.
+# *This* make recipe creates the development install yaml, which requires doing
+# some patching of the original install and putting it back in the extension package
+# directory. It's done here as a post-processing step after the extension package
+# has been generated, which is why the output to a copy and then rename step is
+# needed. This is not the only way to implement this functionality.
+#
+# The implementation here is general, in the sense that any other yamls in the
+# overrides directory will be patched into their corresponding files in the
+# extension package. It assumes that all of the yamls are only one level deep.
+stack-local-build: build
+	find $(LOCAL_OVERRIDES_DIR) -maxdepth 1 -type f -name '*.yaml' | \
+		while read filename ; do \
+			kubectl patch --dry-run --filename $(EXTENSION_PACKAGE_REGISTRY)/$$( basename $$filename ) \
+				--type strategic --output yaml --patch "$$( cat $$filename )" > $(EXTENSION_PACKAGE_REGISTRY)/$$( basename $$filename ).new && \
+			mv $(EXTENSION_PACKAGE_REGISTRY)/$$( basename $$filename ).new $(EXTENSION_PACKAGE_REGISTRY)/$$( basename $$filename ) \
+		; done
+.PHONY: stack-local-build
+
+# Convenience for building a local bundle by running the steps in the right order and with a single command
+local-build: stack-local-build docker-build docker-local-push
+.PHONY: local-build
+
+# Install a locally-built stack using the sample extension installation CR
+stack-install:
+	kubectl apply -f $(CONFIG_SAMPLES_DIR)/install.extension.yaml
+.PHONY: stack-install
+
+stack-uninstall:
+	kubectl delete -f $(CONFIG_SAMPLES_DIR)/install.extension.yaml
+.PHONY: stack-uninstall
+
+# Build the docker image
+docker-build: test
+	docker build --file Dockerfile.stack . -t ${IMG}
+	@echo "updating kustomize image patch file for manager resource"
+	@# The argument to sed -i and the subsequent rm make the in-place sed work well on MacOS.
+	@# There is no good way to do an in-place replacement with sed without leaving behind a
+	@# temporary file.
+	sed -i '.bak' -e 's@image: .*@image: '"${IMG}"'@' ./config/default/manager_image_patch.yaml
+	rm ./config/default/manager_image_patch.yaml.bak
+
+EOF
+}
+
+create_dirs
+create_manifest
+create_samples
+create_build
+

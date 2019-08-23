@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+
+
+COMMAND=${1:-build}
+shift
+
+# Shift returns non-zero if there are no arguments left,
+# so we wait until after `shift` to set -e
+set -e
+set -x
+
+make -f Makefile.stack ${COMMAND} "$@"
