@@ -18,12 +18,6 @@ set -x
 STACK_NAME=${1}
 INIT_DIR=${2:-$PWD}
 
-# Create dirs
-# Create manifest files
-# Create sample install file
-# Create Dockerfile
-# Create Makefile
-
 function create_dirs {
   mkdir -p config/stack
 }
@@ -97,7 +91,7 @@ EOF
 }
 
 function create_build {
-  cat > Dockerfile.stack <<'EOF'
+  cat > stack.Dockerfile <<'EOF'
 # Build the manager binary
 FROM golang:1.12.5 as builder
 
@@ -126,7 +120,7 @@ COPY --from=builder /workspace/manager .
 ENTRYPOINT ["/manager"]
 EOF
 
-  cat > env.stack <<EOF
+  cat > stack.env <<EOF
 # Image URL to use all building/pushing image targets
 IMG ?= ${STACK_NAME}:latest
 
@@ -136,8 +130,8 @@ LOCAL_OVERRIDES_DIR=config/samples/overrides
 CONFIG_SAMPLES_DIR=config/stack/samples
 EOF
 
-  cat > Makefile.stack <<'EOF'
-include env.stack
+  cat > stack.Makefile <<'EOF'
+include stack.env
 
 GO111MODULE ?= on
 export GO111MODULE
@@ -264,7 +258,7 @@ stack-uninstall:
 
 # Build the docker image
 docker-build: test
-	docker build --file Dockerfile.stack . -t ${IMG}
+	docker build --file stack.Dockerfile . -t ${IMG}
 	@echo "updating kustomize image patch file for manager resource"
 	@# The argument to sed -i and the subsequent rm make the in-place sed work well on MacOS.
 	@# There is no good way to do an in-place replacement with sed without leaving behind a

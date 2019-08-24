@@ -9,4 +9,4 @@ shift
 set -e
 set -x
 
-make -f Makefile.stack ${COMMAND} "$@"
+make -f stack.Makefile ${COMMAND} "$@"
