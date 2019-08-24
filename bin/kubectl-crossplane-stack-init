@@ -23,17 +23,17 @@ function create_dirs {
 }
 
 function create_manifest {
-  mkdir -p config/stack/manifest
-  touch config/stack/manifest/app.yaml
-  cat > config/stack/manifest/app.yaml <<'EOF'
+  mkdir -p config/stack/manifests
+  touch config/stack/manifests/app.yaml
+  cat > config/stack/manifests/app.yaml <<'EOF'
 EOF
-  touch config/stack/manifest/rbac.yaml
-  cat > config/stack/manifest/rbac.yaml <<'EOF'
+  touch config/stack/manifests/rbac.yaml
+  cat > config/stack/manifests/rbac.yaml <<'EOF'
 ---
 # Put your rbac rules here
 EOF
-  touch config/stack/manifest/install.yaml
-  cat > config/stack/manifest/install.yaml <<EOF
+  touch config/stack/manifests/install.yaml
+  cat > config/stack/manifests/install.yaml <<EOF
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -180,7 +180,7 @@ $(STACK_PACKAGE_REGISTRY):
 	mkdir -p $(STACK_PACKAGE_REGISTRY)/resources
 	touch $(STACK_PACKAGE_REGISTRY)/app.yaml $(STACK_PACKAGE_REGISTRY)/install.yaml $(STACK_PACKAGE_REGISTRY)/rbac.yaml
 
-build: manager manifests $(STACK_PACKAGE_REGISTRY)
+build: $(STACK_PACKAGE_REGISTRY)
 	# Copy CRDs over
 	#
 	# The reason this looks complicated is because it is
