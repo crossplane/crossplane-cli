@@ -204,12 +204,14 @@ clean-binary:
 	rm -r bin
 .PHONY: clean-binary
 
+build: bundle docker-build
+
 # Initialize the stack bundle folder
 $(STACK_PACKAGE_REGISTRY):
 	mkdir -p $(STACK_PACKAGE_REGISTRY)/resources
 	touch $(STACK_PACKAGE_REGISTRY)/app.yaml $(STACK_PACKAGE_REGISTRY)/install.yaml $(STACK_PACKAGE_REGISTRY)/rbac.yaml
 
-build: $(STACK_PACKAGE_REGISTRY)
+bundle: $(STACK_PACKAGE_REGISTRY)
 	# Copy CRDs over
 	#
 	# The reason this looks complicated is because it is
@@ -223,24 +225,25 @@ build: $(STACK_PACKAGE_REGISTRY)
 		$(STACK_PACKAGE_REGISTRY)/resources/$$( basename $${filename/.yaml/.crd.yaml} ) \
 		; done
 	cp -r $(STACK_PACKAGE_REGISTRY_SOURCE)/* $(STACK_PACKAGE_REGISTRY)
-.PHONY: build
+.PHONY: bundle
 
 # A local docker registry can be used to publish and consume images locally, which
 # is convenient during development, as it simulates the whole lifecycle of the
 # Stack, end-to-end.
 docker-local-registry:
-	docker run -d -p 5000:5000 --restart=always --name registry registry:2
+	[[ $$( docker ps --filter name=registry --filter status=running --last 1 --quiet | wc -l ) -eq 1 ]] || \
+		docker run -d -p 5000:5000 --restart=always --name registry registry:2
 .PHONY: docker-local-registry
 
 # Tagging the image with the address of the local registry is a necessary step of
 # publishing the image to the local registry.
-docker-local-tag:
+docker-local-tag: docker-local-registry
 	docker tag ${IMG} localhost:5000/${IMG}
 .PHONY: docker-local-tag
 
 # When we are developing locally, this target will publish our container image
 # to the local registry.
-docker-local-push: docker-local-tag
+docker-local-push: docker-local-tag docker-local-registry
 	docker push localhost:5000/${IMG}
 .PHONY: docker-local-push
 
@@ -263,7 +266,7 @@ docker-local-push: docker-local-tag
 # The implementation here is general, in the sense that any other yamls in the
 # overrides directory will be patched into their corresponding files in the
 # stack package. It assumes that all of the yamls are only one level deep.
-stack-local-build: build
+stack-local-build: bundle
 	find $(LOCAL_OVERRIDES_DIR) -maxdepth 1 -type f -name '*.yaml' | \
 		while read filename ; do \
 			kubectl patch --dry-run --filename $(STACK_PACKAGE_REGISTRY)/$$( basename $$filename ) \
@@ -286,7 +289,7 @@ stack-uninstall:
 .PHONY: stack-uninstall
 
 # Build the docker image
-docker-build: test
+docker-build: bundle
 	docker build --file stack.Dockerfile . -t ${IMG}
 	@echo "updating kustomize image patch file for manager resource"
 	@# The argument to sed -i and the subsequent rm make the in-place sed work well on MacOS.
@@ -295,6 +298,8 @@ docker-build: test
 	sed -i '.bak' -e 's@image: .*@image: '"${IMG}"'@' ./config/default/manager_image_patch.yaml
 	rm ./config/default/manager_image_patch.yaml.bak
 
+docker-push:
+	docker push ${IMG}
 EOF
   echo 'Created stack.Makefile' >&2
 }
