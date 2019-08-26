@@ -5,6 +5,9 @@ set -e
 function usage {
   echo "Usage: kubectl crossplane stack init STACK_NAME [DIRECTORY]" >&2
   echo "" >&2
+  echo "STACK_NAME is used as the image name for the stack, and any '/' characters" >&2
+  echo "are converted to '-' characters when populating kubernetes resource field names." >&2
+  echo "" >&2
   echo "DIRECTORY defaults to the current directory." >&2
 }
 
@@ -16,6 +19,10 @@ fi
 set -x
 
 STACK_NAME=${1}
+# For kubernetes fields, we aren't able to use slashes, and
+# slashes are common for docker image names. So we remove the
+# slashes before we use the name for kubernetes resource fields.
+KUBEY_STACK_NAME=$( echo ${STACK_NAME} | tr '/' '-' )
 INIT_DIR=${2:-$PWD}
 
 function create_dirs {
@@ -37,23 +44,23 @@ EOF
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: "${STACK_NAME}"
+  name: "${KUBEY_STACK_NAME}"
   labels:
-    core.crossplane.io/name: "${STACK_NAME}"
+    core.crossplane.io/name: "${KUBEY_STACK_NAME}"
 spec:
   selector:
     matchLabels:
-      core.crossplane.io/name: "${STACK_NAME}"
+      core.crossplane.io/name: "${KUBEY_STACK_NAME}"
   replicas: 1
   template:
     metadata:
-      name: "${STACK_NAME}-controller"
+      name: "${KUBEY_STACK_NAME}-controller"
       labels:
-        core.crossplane.io/name: "${STACK_NAME}"
+        core.crossplane.io/name: "${KUBEY_STACK_NAME}"
     spec:
       containers:
-      - name: "${STACK_NAME}-controller"
-        image: "${STACK_NAME}"
+      - name: "${KUBEY_STACK_NAME}-controller"
+        image: "${KUBEY_STACK_NAME}"
         env:
         - name: POD_NAME
           valueFrom:
@@ -70,23 +77,32 @@ function create_samples {
   mkdir -p config/stack/samples
   cat > config/stack/samples/local.install.stack.yaml <<EOF
 ---
-apiVersion: extensions.crossplane.io/v1alpha1
-kind: ExtensionRequest
+apiVersion: stacks.crossplane.io/v1alpha1
+kind: StackRequest
 metadata:
-  name: "${STACK_NAME}"
+  name: "${KUBEY_STACK_NAME}"
 spec:
   source: localhost:5000
-  package: "${STACK_NAME}"
+  package: "${KUBEY_STACK_NAME}"
 EOF
 
   cat > config/stack/samples/install.stack.yaml <<EOF
 ---
-apiVersion: extensions.crossplane.io/v1alpha1
-kind: ExtensionRequest
+apiVersion: stacks.crossplane.io/v1alpha1
+kind: StackRequest
 metadata:
-  name: "${STACK_NAME}"
+  name: "${KUBEY_STACK_NAME}"
 spec:
-  package: "${STACK_NAME}"
+  package: "${KUBEY_STACK_NAME}"
+EOF
+
+  cat > config/stack/samples/overrides/install.yaml <<EOF
+spec:
+  template:
+    spec:
+      containers:
+      - name: "${KUBEY_STACK_NAME}-controller"
+        image: "localhost:5000/${STACK_NAME}"
 EOF
 }
 
@@ -115,7 +131,7 @@ RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 GO111MODULE=on go build -a -o manager 
 # Alpine is used instead of distroless because the stack manager expects things like `cp` to exist
 FROM alpine:3.7
 WORKDIR /
-COPY extension-package /
+COPY stack-package /
 COPY --from=builder /workspace/manager .
 ENTRYPOINT ["/manager"]
 EOF
