@@ -21,6 +21,9 @@ STACK_NAME=${1}
 # slashes are common for docker image names. So we remove the
 # slashes before we use the name for kubernetes resource fields.
 KUBEY_STACK_NAME=$( echo ${STACK_NAME} | tr '/' '-' )
+# This is mostly for code clarity, but it's possible that the
+# image name won't be the passed-in stack name in the future.
+STACK_IMAGE_NAME=${STACK_NAME}
 INIT_DIR=${2:-$PWD}
 
 function create_dirs {
@@ -63,7 +66,7 @@ spec:
     spec:
       containers:
       - name: "${KUBEY_STACK_NAME}-controller"
-        image: "${KUBEY_STACK_NAME}"
+        image: "${STACK_IMAGE_NAME}"
         env:
         - name: POD_NAME
           valueFrom:
@@ -109,7 +112,7 @@ spec:
     spec:
       containers:
       - name: "${KUBEY_STACK_NAME}-controller"
-        image: "localhost:5000/${STACK_NAME}"
+        image: "localhost:5000/${STACK_IMAGE_NAME}"
 EOF
   echo 'Created config/stack/samples/overrides/install.yaml' >&2
 }
