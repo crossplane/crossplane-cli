@@ -105,8 +105,8 @@ spec:
 EOF
   echo 'Created config/stack/samples/install.stack.yaml' >&2
 
-  mkdir -p config/stack/samples/overrides
-  cat > config/stack/samples/overrides/install.yaml <<EOF
+  mkdir -p config/stack/overrides
+  cat > config/stack/overrides/install.yaml <<EOF
 spec:
   template:
     spec:
@@ -114,7 +114,7 @@ spec:
       - name: "${KUBEY_STACK_NAME}-controller"
         image: "localhost:5000/${STACK_IMAGE_NAME}"
 EOF
-  echo 'Created config/stack/samples/overrides/install.yaml' >&2
+  echo 'Created config/stack/overrides/install.yaml' >&2
 }
 
 function create_build {
@@ -154,7 +154,7 @@ IMG ?= ${STACK_NAME}:latest
 
 CRD_DIR=config/crd/bases
 STACK_PACKAGE_REGISTRY_SOURCE=config/stack/manifests
-LOCAL_OVERRIDES_DIR=config/stack/samples/overrides
+LOCAL_OVERRIDES_DIR=config/stack/overrides
 CONFIG_SAMPLES_DIR=config/stack/samples
 EOF
   echo 'Created stack.env' >&2
