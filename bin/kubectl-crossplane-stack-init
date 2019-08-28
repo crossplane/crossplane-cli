@@ -90,7 +90,7 @@ metadata:
   name: "${KUBEY_STACK_NAME}"
 spec:
   source: localhost:5000
-  package: "${KUBEY_STACK_NAME}"
+  package: "${STACK_IMAGE_NAME}"
 EOF
   echo 'Created config/stack/samples/local.install.stack.yaml' >&2
 
@@ -101,7 +101,7 @@ kind: StackRequest
 metadata:
   name: "${KUBEY_STACK_NAME}"
 spec:
-  package: "${KUBEY_STACK_NAME}"
+  package: "${STACK_IMAGE_NAME}"
 EOF
   echo 'Created config/stack/samples/install.stack.yaml' >&2
 
