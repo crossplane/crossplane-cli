@@ -1,0 +1,327 @@
+#!/usr/bin/env bash
+
+set -e
+
+function usage {
+  echo "Usage: kubectl crossplane stack init STACK_NAME [DIRECTORY]" >&2
+  echo "" >&2
+  echo "STACK_NAME is used as the image name for the stack, and any '/' characters" >&2
+  echo "are converted to '-' characters when populating kubernetes resource field names." >&2
+  echo "" >&2
+  echo "DIRECTORY defaults to the current directory." >&2
+}
+
+if [[ $# -lt 1 ]] ; then
+  usage
+  exit 1
+fi
+
+STACK_NAME=${1}
+# For kubernetes fields, we aren't able to use slashes, and
+# slashes are common for docker image names. So we remove the
+# slashes before we use the name for kubernetes resource fields.
+KUBEY_STACK_NAME=$( echo ${STACK_NAME} | tr '/' '-' )
+# This is mostly for code clarity, but it's possible that the
+# image name won't be the passed-in stack name in the future.
+STACK_IMAGE_NAME=${STACK_NAME}
+INIT_DIR=${2:-$PWD}
+
+function create_dirs {
+  mkdir -p config/stack
+}
+
+function create_manifest {
+  mkdir -p config/stack/manifests
+  touch config/stack/manifests/app.yaml
+  cat > config/stack/manifests/app.yaml <<'EOF'
+EOF
+
+  echo 'Created config/stack/manifests/app.yaml' >&2
+
+  touch config/stack/manifests/install.yaml
+  cat > config/stack/manifests/install.yaml <<EOF
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: "${KUBEY_STACK_NAME}"
+  labels:
+    core.crossplane.io/name: "${KUBEY_STACK_NAME}"
+spec:
+  selector:
+    matchLabels:
+      core.crossplane.io/name: "${KUBEY_STACK_NAME}"
+  replicas: 1
+  template:
+    metadata:
+      name: "${KUBEY_STACK_NAME}-controller"
+      labels:
+        core.crossplane.io/name: "${KUBEY_STACK_NAME}"
+    spec:
+      containers:
+      - name: "${KUBEY_STACK_NAME}-controller"
+        image: "${STACK_IMAGE_NAME}"
+        env:
+        - name: POD_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name
+        - name: POD_NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
+EOF
+  echo 'Created config/stack/manifests/install.yaml' >&2
+}
+
+function create_samples {
+  mkdir -p config/stack/samples
+  cat > config/stack/samples/local.install.stack.yaml <<EOF
+---
+apiVersion: stacks.crossplane.io/v1alpha1
+kind: StackRequest
+metadata:
+  name: "${KUBEY_STACK_NAME}"
+spec:
+  source: localhost:5000
+  package: "${STACK_IMAGE_NAME}"
+EOF
+  echo 'Created config/stack/samples/local.install.stack.yaml' >&2
+
+  cat > config/stack/samples/install.stack.yaml <<EOF
+---
+apiVersion: stacks.crossplane.io/v1alpha1
+kind: StackRequest
+metadata:
+  name: "${KUBEY_STACK_NAME}"
+spec:
+  package: "${STACK_IMAGE_NAME}"
+EOF
+  echo 'Created config/stack/samples/install.stack.yaml' >&2
+
+  mkdir -p config/stack/overrides
+  cat > config/stack/overrides/install.yaml <<EOF
+spec:
+  template:
+    spec:
+      containers:
+      - name: "${KUBEY_STACK_NAME}-controller"
+        image: "localhost:5000/${STACK_IMAGE_NAME}"
+EOF
+  echo 'Created config/stack/overrides/install.yaml' >&2
+}
+
+function create_build {
+  cat > stack.Dockerfile <<'EOF'
+# Build the manager binary
+FROM golang:1.12.5 as builder
+
+WORKDIR /workspace
+# Copy the Go Modules manifests
+COPY go.mod go.mod
+COPY go.sum go.sum
+# cache deps before building and copying source so that we don't need to re-download as much
+# and so that source changes don't invalidate our downloaded layer
+RUN go mod download
+
+# Copy the go source
+COPY main.go main.go
+COPY api/ api/
+COPY controllers/ controllers/
+
+# Build
+RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 GO111MODULE=on go build -a -o manager main.go
+
+# Use alpine as a minimal base image to package the manager binary
+# Alpine is used instead of distroless because the stack manager expects things like `cp` to exist
+FROM alpine:3.7
+WORKDIR /
+COPY stack-package /
+COPY --from=builder /workspace/manager .
+ENTRYPOINT ["/manager"]
+EOF
+  echo 'Created stack.Dockerfile' >&2
+
+  cat > stack.env <<EOF
+# Image URL to use all building/pushing image targets
+IMG ?= ${STACK_NAME}:latest
+
+CRD_DIR=config/crd/bases
+# Files matching this glob will be placed into the stack's
+# rbac.yaml. It could be multiple filenames or multiple
+# glob patterns.
+RBAC_GLOB=config/rbac/role.yaml
+STACK_PACKAGE_REGISTRY_SOURCE=config/stack/manifests
+LOCAL_OVERRIDES_DIR=config/stack/overrides
+CONFIG_SAMPLES_DIR=config/stack/samples
+EOF
+  echo 'Created stack.env' >&2
+
+  cat > stack.Makefile <<'EOF'
+include stack.env
+
+GO111MODULE ?= on
+export GO111MODULE
+
+# Get the currently used golang install path (in GOPATH/bin, unless GOBIN is set)
+ifeq (,$(shell go env GOBIN))
+GOBIN=$(shell go env GOPATH)/bin
+else
+GOBIN=$(shell go env GOBIN)
+endif
+
+
+STACK_PACKAGE=stack-package
+STACK_PACKAGE_REGISTRY=$(STACK_PACKAGE)/.registry
+
+all: build
+
+################################################
+#
+# Below this until marked otherwise is where
+# most of the build customizations beyond
+# what kubebuilder generates live.
+#
+# Here are some other customizations of note:
+# - Set IMG above to be more specific
+# - Add GO111MODULE=on
+# - Add COPY of stack bundle in Dockerfile
+# - Add some other make variables
+# - Made docker-build recipe work well on MacOS
+#
+################################################
+
+clean: clean-stack-package clean-binary
+.PHONY: clean
+
+clean-stack-package:
+	rm -r $(STACK_PACKAGE)
+.PHONY: clean-stack-package
+
+clean-binary:
+	rm -r bin
+.PHONY: clean-binary
+
+build: bundle docker-build
+
+# Initialize the stack bundle folder
+$(STACK_PACKAGE_REGISTRY):
+	mkdir -p $(STACK_PACKAGE_REGISTRY)/resources
+	touch $(STACK_PACKAGE_REGISTRY)/app.yaml $(STACK_PACKAGE_REGISTRY)/install.yaml $(STACK_PACKAGE_REGISTRY)/rbac.yaml
+
+bundle: $(STACK_PACKAGE_REGISTRY)
+	# Copy CRDs over
+	#
+	# The reason this looks complicated is because it is
+	# preserving the original crd filenames and changing
+	# *.yaml to *.crd.yaml.
+	#
+	# An alternate and simpler-looking approach would
+	# be to cat all of the files into a single crd.yaml.
+	find $(CRD_DIR) -type f -name '*.yaml' | \
+		while read filename ; do cat $$filename > \
+		$(STACK_PACKAGE_REGISTRY)/resources/$$( basename $${filename/.yaml/.crd.yaml} ) \
+		; done
+
+	# If RBAC_GLOB is set *and* there is an rbac.yaml in the registry
+	# source folder, the registry source will win.
+	cat $(RBAC_GLOB) > $(STACK_PACKAGE_REGISTRY)/rbac.yaml
+	cp -r $(STACK_PACKAGE_REGISTRY_SOURCE)/* $(STACK_PACKAGE_REGISTRY)
+.PHONY: bundle
+
+# A local docker registry can be used to publish and consume images locally, which
+# is convenient during development, as it simulates the whole lifecycle of the
+# Stack, end-to-end.
+docker-local-registry:
+	[[ $$( docker ps --filter name=registry --filter status=running --last 1 --quiet | wc -l ) -eq 1 ]] || \
+		docker run -d -p 5000:5000 --restart=always --name registry registry:2
+.PHONY: docker-local-registry
+
+# Tagging the image with the address of the local registry is a necessary step of
+# publishing the image to the local registry.
+docker-local-tag: docker-local-registry
+	docker tag ${IMG} localhost:5000/${IMG}
+.PHONY: docker-local-tag
+
+# When we are developing locally, this target will publish our container image
+# to the local registry.
+docker-local-push: docker-local-tag docker-local-registry
+	docker push localhost:5000/${IMG}
+.PHONY: docker-local-push
+
+# Sooo ideally this wouldn't be a single line, but the idea here is that when we're
+# developing locally, we want to use our locally-published container image for the
+# Stack's controller container. The container image is specified in the install
+# yaml for the Stack. This means we need two versions of the install:
+#
+# * One for "regular", production publishing
+# * One for development
+#
+# The way this has been implemented here is by having the base install yaml be the
+# production install, with a yaml patch on the side for use during development.
+# *This* make recipe creates the development install yaml, which requires doing
+# some patching of the original install and putting it back in the stack package
+# directory. It's done here as a post-processing step after the stack package
+# has been generated, which is why the output to a copy and then rename step is
+# needed. This is not the only way to implement this functionality.
+#
+# The implementation here is general, in the sense that any other yamls in the
+# overrides directory will be patched into their corresponding files in the
+# stack package. It assumes that all of the yamls are only one level deep.
+stack-local-build: bundle
+	find $(LOCAL_OVERRIDES_DIR) -maxdepth 1 -type f -name '*.yaml' | \
+		while read filename ; do \
+			kubectl patch --dry-run --filename $(STACK_PACKAGE_REGISTRY)/$$( basename $$filename ) \
+				--type strategic --output yaml --patch "$$( cat $$filename )" > $(STACK_PACKAGE_REGISTRY)/$$( basename $$filename ).new && \
+			mv $(STACK_PACKAGE_REGISTRY)/$$( basename $$filename ).new $(STACK_PACKAGE_REGISTRY)/$$( basename $$filename ) \
+		; done
+.PHONY: stack-local-build
+
+# Convenience for building a local bundle by running the steps in the right order and with a single command
+local-build: stack-local-build docker-build docker-local-push
+.PHONY: local-build
+
+# Install a locally-built stack using the sample stack installation CR
+stack-install:
+	kubectl apply -f $(CONFIG_SAMPLES_DIR)/local.install.stack.yaml
+.PHONY: stack-install
+
+stack-uninstall:
+	kubectl delete -f $(CONFIG_SAMPLES_DIR)/local.install.stack.yaml
+.PHONY: stack-uninstall
+
+# Build the docker image
+docker-build: bundle
+	docker build --file stack.Dockerfile . -t ${IMG}
+	@echo "updating kustomize image patch file for manager resource"
+	@# The argument to sed -i and the subsequent rm make the in-place sed work well on MacOS.
+	@# There is no good way to do an in-place replacement with sed without leaving behind a
+	@# temporary file.
+	sed -i '.bak' -e 's@image: .*@image: '"${IMG}"'@' ./config/default/manager_image_patch.yaml
+	rm ./config/default/manager_image_patch.yaml.bak
+
+docker-push:
+	docker push ${IMG}
+EOF
+  echo 'Created stack.Makefile' >&2
+
+
+  if [ -f .gitignore ] ; then
+    grep -q 'stack-package/' .gitignore || cat >>.gitignore <<EOF
+
+# stack-package is a generated folder, and can be considered an intermediate
+# build artifact. We don't need to check it into version control.
+stack-package/
+EOF
+    echo 'Made sure stack-package/ is in .gitignore' >&2
+  else
+    echo 'No .gitignore found; not adding stack-package/ to .gitignore' >&2
+  fi
+}
+
+cd ${INIT_DIR}
+create_dirs
+create_manifest
+create_samples
+create_build
+
+  echo 'Done!' >&2
