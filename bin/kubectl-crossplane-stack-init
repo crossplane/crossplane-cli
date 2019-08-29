@@ -38,13 +38,6 @@ EOF
 
   echo 'Created config/stack/manifests/app.yaml' >&2
 
-  touch config/stack/manifests/rbac.yaml
-  cat > config/stack/manifests/rbac.yaml <<'EOF'
----
-# Put your rbac rules here
-EOF
-  echo 'Created config/stack/manifests/rbac.yaml' >&2
-
   touch config/stack/manifests/install.yaml
   cat > config/stack/manifests/install.yaml <<EOF
 apiVersion: apps/v1
@@ -153,6 +146,10 @@ EOF
 IMG ?= ${STACK_NAME}:latest
 
 CRD_DIR=config/crd/bases
+# Files matching this glob will be placed into the stack's
+# rbac.yaml. It could be multiple filenames or multiple
+# glob patterns.
+RBAC_GLOB=config/rbac/role.yaml
 STACK_PACKAGE_REGISTRY_SOURCE=config/stack/manifests
 LOCAL_OVERRIDES_DIR=config/stack/overrides
 CONFIG_SAMPLES_DIR=config/stack/samples
@@ -224,6 +221,10 @@ bundle: $(STACK_PACKAGE_REGISTRY)
 		while read filename ; do cat $$filename > \
 		$(STACK_PACKAGE_REGISTRY)/resources/$$( basename $${filename/.yaml/.crd.yaml} ) \
 		; done
+
+	# If RBAC_GLOB is set *and* there is an rbac.yaml in the registry
+	# source folder, the registry source will win.
+	cat $(RBAC_GLOB) > $(STACK_PACKAGE_REGISTRY)/rbac.yaml
 	cp -r $(STACK_PACKAGE_REGISTRY_SOURCE)/* $(STACK_PACKAGE_REGISTRY)
 .PHONY: bundle
 
