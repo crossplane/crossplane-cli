@@ -4,9 +4,9 @@
 
 Get the commands on the PATH so `kubectl` can pick them up:
 ```
-curl -o /usr/local/bin/kubectl-crossplane-stack-build https://raw.githubusercontent.com/suskin/crossplane-stack-cli/master/bin/kubectl-crossplane-stack-build -s >/dev/null
-curl -o /usr/local/bin/kubectl-crossplane-stack-init https://raw.githubusercontent.com/suskin/crossplane-stack-cli/master/bin/kubectl-crossplane-stack-init -s >/dev/null
-curl -o /usr/local/bin/kubectl-crossplane-stack-publish https://raw.githubusercontent.com/suskin/crossplane-stack-cli/master/bin/kubectl-crossplane-stack-publish -s >/dev/null
+curl -o /usr/local/bin/kubectl-crossplane-stack-build https://raw.githubusercontent.com/crossplaneio/crossplane-cli/master/bin/kubectl-crossplane-stack-build -s >/dev/null
+curl -o /usr/local/bin/kubectl-crossplane-stack-init https://raw.githubusercontent.com/crossplaneio/crossplane-cli/master/bin/kubectl-crossplane-stack-init -s >/dev/null
+curl -o /usr/local/bin/kubectl-crossplane-stack-publish https://raw.githubusercontent.com/crossplaneio/crossplane-cli/master/bin/kubectl-crossplane-stack-publish -s >/dev/null
 chmod +x /usr/local/bin/kubectl-crossplane-stack-*
 ```
 
@@ -71,9 +71,9 @@ Copy the plugins to somewhere on your `PATH`. If you have
 `/usr/local/bin` on your `PATH`, you can do it like this:
 
 ```
-curl -o /usr/local/bin/kubectl-crossplane-stack-init https://raw.githubusercontent.com/suskin/crossplane-stack-cli/master/bin/kubectl-crossplane-stack-init -s >/dev/null
-curl -o /usr/local/bin/kubectl-crossplane-stack-build https://raw.githubusercontent.com/suskin/crossplane-stack-cli/master/bin/kubectl-crossplane-stack-build -s >/dev/null
-curl -o /usr/local/bin/kubectl-crossplane-stack-publish https://raw.githubusercontent.com/suskin/crossplane-stack-cli/master/bin/kubectl-crossplane-stack-publish -s >/dev/null
+curl -o /usr/local/bin/kubectl-crossplane-stack-build https://raw.githubusercontent.com/crossplaneio/crossplane-cli/master/bin/kubectl-crossplane-stack-build -s >/dev/null
+curl -o /usr/local/bin/kubectl-crossplane-stack-init https://raw.githubusercontent.com/crossplaneio/crossplane-cli/master/bin/kubectl-crossplane-stack-init -s >/dev/null
+curl -o /usr/local/bin/kubectl-crossplane-stack-publish https://raw.githubusercontent.com/crossplaneio/crossplane-cli/master/bin/kubectl-crossplane-stack-publish -s >/dev/null
 chmod +x /usr/local/bin/kubectl-crossplane-stack-*
 ```
 
