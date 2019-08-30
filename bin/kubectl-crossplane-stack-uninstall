@@ -14,5 +14,6 @@ if [[ $# -lt 1 ]] ; then
 fi
 
 STACK_NAME="${1}"
+shift
 
 kubectl delete stackrequest "${STACK_NAME}" "$@"
