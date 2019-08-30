@@ -1,0 +1,18 @@
+#!/usr/bin/env bash
+
+set -e
+
+function usage {
+  echo "Usage: kubectl crossplane stack uninstall STACK_NAME" >&2
+  echo "" >&2
+  echo "STACK_NAME is the name of the stack to uninstall." >&2
+}
+
+if [[ $# -lt 1 ]] ; then
+  usage
+  exit 1
+fi
+
+STACK_NAME="${1}"
+
+kubectl delete stackrequest "${STACK_NAME}" "$@"
