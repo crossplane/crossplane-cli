@@ -7,6 +7,8 @@ Get the commands on the PATH so `kubectl` can pick them up:
 curl -o /usr/local/bin/kubectl-crossplane-stack-build https://raw.githubusercontent.com/crossplaneio/crossplane-cli/master/bin/kubectl-crossplane-stack-build -s >/dev/null
 curl -o /usr/local/bin/kubectl-crossplane-stack-init https://raw.githubusercontent.com/crossplaneio/crossplane-cli/master/bin/kubectl-crossplane-stack-init -s >/dev/null
 curl -o /usr/local/bin/kubectl-crossplane-stack-publish https://raw.githubusercontent.com/crossplaneio/crossplane-cli/master/bin/kubectl-crossplane-stack-publish -s >/dev/null
+curl -o /usr/local/bin/kubectl-crossplane-stack-install https://raw.githubusercontent.com/crossplaneio/crossplane-cli/master/bin/kubectl-crossplane-stack-install -s >/dev/null
+curl -o /usr/local/bin/kubectl-crossplane-stack-uninstall https://raw.githubusercontent.com/crossplaneio/crossplane-cli/master/bin/kubectl-crossplane-stack-uninstall -s >/dev/null
 chmod +x /usr/local/bin/kubectl-crossplane-stack-*
 ```
 
@@ -74,6 +76,8 @@ Copy the plugins to somewhere on your `PATH`. If you have
 curl -o /usr/local/bin/kubectl-crossplane-stack-build https://raw.githubusercontent.com/crossplaneio/crossplane-cli/master/bin/kubectl-crossplane-stack-build -s >/dev/null
 curl -o /usr/local/bin/kubectl-crossplane-stack-init https://raw.githubusercontent.com/crossplaneio/crossplane-cli/master/bin/kubectl-crossplane-stack-init -s >/dev/null
 curl -o /usr/local/bin/kubectl-crossplane-stack-publish https://raw.githubusercontent.com/crossplaneio/crossplane-cli/master/bin/kubectl-crossplane-stack-publish -s >/dev/null
+curl -o /usr/local/bin/kubectl-crossplane-stack-install https://raw.githubusercontent.com/crossplaneio/crossplane-cli/master/bin/kubectl-crossplane-stack-install -s >/dev/null
+curl -o /usr/local/bin/kubectl-crossplane-stack-uninstall https://raw.githubusercontent.com/crossplaneio/crossplane-cli/master/bin/kubectl-crossplane-stack-uninstall -s >/dev/null
 chmod +x /usr/local/bin/kubectl-crossplane-stack-*
 ```
 
@@ -163,8 +167,12 @@ When the stack is built, the next step is to install it into our
 Crossplane:
 
 ```
-kubectl crossplane stack build stack-install
+kubectl crossplane stack install 'crossplane-examples/hello-world' 'crossplane-examples-hello-world' localhost:5000
 ```
+
+This can also be done using the sample local stack request that the
+`init` command generates, but it's a good habit to use the `install`
+command.
 
 ### Create an object for the stack to manage
 Once the stack is installed into our Crossplane, we can use one of the
@@ -213,11 +221,12 @@ kubectl crossplane stack publish
 ```
 
 ### Install
-Installing the stack can be done with the sample which was generated for
-us by the `init` that we ran earlier.
+Installing the stack can be done with a sample which was generated for
+us by the `init` that we ran earlier, but it's a little easier to use
+the `install` command:
 
 ```
-kubectl apply -f config/stack/samples/install.stack.yaml
+kubectl crossplane stack install 'crossplane-examples/hello-world'
 ```
 
 
