@@ -13,6 +13,14 @@ curl -o /usr/local/bin/kubectl-crossplane-stack-generate_install https://raw.git
 chmod +x /usr/local/bin/kubectl-crossplane-stack-*
 ```
 
+### Installing from source
+
+If you have the source repository checked out, installing is simple:
+
+```
+make install
+```
+
 ## Uninstallation
 
 If you followed the installation process above, you can remove
@@ -20,6 +28,14 @@ everything with:
 
 ```
 rm /usr/local/bin/kubectl-crossplane-stack-*
+```
+
+### Uninstalling from source
+
+If you have the source repository checked out:
+
+```
+make uninstall
 ```
 
 ## Usage
