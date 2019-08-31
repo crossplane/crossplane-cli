@@ -7,13 +7,11 @@ function usage {
   # would be overridden more often than stack image source, but I kept going back and
   # forth on that originally. Overriding the source is very useful when developing a
   # stack locally, for example.
-  echo "Usage: kubectl crossplane stack install STACK_IMAGE_NAME [STACK_NAME [STACK_IMAGE_SOURCE]]" >&2
+  echo "Usage: kubectl crossplane stack generate-install STACK_IMAGE_NAME [STACK_NAME [STACK_IMAGE_SOURCE]]" >&2
   echo "" >&2
   echo "STACK_IMAGE_NAME is the name of the stack in the registry to install." >&2
   echo "If the STACK_NAME is not provided, the stack name will be the STACK_IMAGE_NAME with any '/' characters" >&2
   echo "converted to '-' characters." >&2
-  echo "" >&2
-  echo 'For more advanced usage, see the lower-level `kubectl crossplane stack generate-install` command.' >&2
 }
 
 if [[ $# -lt 1 ]] ; then
@@ -29,9 +27,34 @@ KUBEY_STACK_IMAGE_NAME=$( echo "${STACK_IMAGE_NAME}" | tr '/' '-' )
 # Defaults to the kubey stack image name, but can be overridden
 # by passing arguments
 STACK_NAME="${2:-${KUBEY_STACK_IMAGE_NAME}}"
+STACK_IMAGE_SOURCE="${3}"
 
-kubectl crossplane stack generate-install "$@" | kubectl apply -f -
-# Printing out the stack request object from the cluster may be useful
-# for whoever ran this command, and there's no other output anyway, so
-# we might as well.
-kubectl get -o yaml stackrequest "${STACK_NAME}"
+SOURCE_SNIPPET=""
+
+if [[ -n "${STACK_IMAGE_SOURCE}" ]]; then
+  # This chunk of code is used to set the "source: " field
+  # to use the source argument if it was provided, but to
+  # exclude the field entirely if it was not provided.
+  SOURCE_SNIPPET=$( cat <<EOF
+  source: "${STACK_IMAGE_SOURCE}"
+EOF
+)
+fi
+
+INSTALL_YAML="$( cat <<EOF
+apiVersion: stacks.crossplane.io/v1alpha1
+kind: StackRequest
+metadata:
+  name: "${STACK_NAME}"
+spec:
+  package: "${STACK_IMAGE_NAME}"
+${SOURCE_SNIPPET}
+EOF
+)"
+
+# This could also have been done without a pipe, but
+# doing it without a pipe hides the contents of INSTALL_YAML
+# from set -x if it's being used. It's nice to be able to
+# see the contents of INSTALL_YAML by just setting -x and
+# not having to add an extra log line.
+echo "${INSTALL_YAML}"

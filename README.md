@@ -9,7 +9,17 @@ curl -o /usr/local/bin/kubectl-crossplane-stack-init https://raw.githubuserconte
 curl -o /usr/local/bin/kubectl-crossplane-stack-publish https://raw.githubusercontent.com/crossplaneio/crossplane-cli/master/bin/kubectl-crossplane-stack-publish -s >/dev/null
 curl -o /usr/local/bin/kubectl-crossplane-stack-install https://raw.githubusercontent.com/crossplaneio/crossplane-cli/master/bin/kubectl-crossplane-stack-install -s >/dev/null
 curl -o /usr/local/bin/kubectl-crossplane-stack-uninstall https://raw.githubusercontent.com/crossplaneio/crossplane-cli/master/bin/kubectl-crossplane-stack-uninstall -s >/dev/null
+curl -o /usr/local/bin/kubectl-crossplane-stack-generate_install https://raw.githubusercontent.com/crossplaneio/crossplane-cli/master/bin/kubectl-crossplane-stack-generate_install -s >/dev/null
 chmod +x /usr/local/bin/kubectl-crossplane-stack-*
+```
+
+## Uninstallation
+
+If you followed the installation process above, you can remove
+everything with:
+
+```
+rm /usr/local/bin/kubectl-crossplane-stack-*
 ```
 
 ## Usage
@@ -80,6 +90,7 @@ curl -o /usr/local/bin/kubectl-crossplane-stack-init https://raw.githubuserconte
 curl -o /usr/local/bin/kubectl-crossplane-stack-publish https://raw.githubusercontent.com/crossplaneio/crossplane-cli/master/bin/kubectl-crossplane-stack-publish -s >/dev/null
 curl -o /usr/local/bin/kubectl-crossplane-stack-install https://raw.githubusercontent.com/crossplaneio/crossplane-cli/master/bin/kubectl-crossplane-stack-install -s >/dev/null
 curl -o /usr/local/bin/kubectl-crossplane-stack-uninstall https://raw.githubusercontent.com/crossplaneio/crossplane-cli/master/bin/kubectl-crossplane-stack-uninstall -s >/dev/null
+curl -o /usr/local/bin/kubectl-crossplane-stack-generate_install https://raw.githubusercontent.com/crossplaneio/crossplane-cli/master/bin/kubectl-crossplane-stack-generate_install -s >/dev/null
 chmod +x /usr/local/bin/kubectl-crossplane-stack-*
 ```
 
