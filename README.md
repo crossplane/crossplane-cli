@@ -2,15 +2,18 @@
 
 ## Installation
 
-Get the commands on the PATH so `kubectl` can pick them up:
+Here's the one-liner to do it:
+
 ```
-curl -o /usr/local/bin/kubectl-crossplane-stack-build https://raw.githubusercontent.com/crossplaneio/crossplane-cli/master/bin/kubectl-crossplane-stack-build -s >/dev/null
-curl -o /usr/local/bin/kubectl-crossplane-stack-init https://raw.githubusercontent.com/crossplaneio/crossplane-cli/master/bin/kubectl-crossplane-stack-init -s >/dev/null
-curl -o /usr/local/bin/kubectl-crossplane-stack-publish https://raw.githubusercontent.com/crossplaneio/crossplane-cli/master/bin/kubectl-crossplane-stack-publish -s >/dev/null
-curl -o /usr/local/bin/kubectl-crossplane-stack-install https://raw.githubusercontent.com/crossplaneio/crossplane-cli/master/bin/kubectl-crossplane-stack-install -s >/dev/null
-curl -o /usr/local/bin/kubectl-crossplane-stack-uninstall https://raw.githubusercontent.com/crossplaneio/crossplane-cli/master/bin/kubectl-crossplane-stack-uninstall -s >/dev/null
-curl -o /usr/local/bin/kubectl-crossplane-stack-generate_install https://raw.githubusercontent.com/crossplaneio/crossplane-cli/master/bin/kubectl-crossplane-stack-generate_install -s >/dev/null
-chmod +x /usr/local/bin/kubectl-crossplane-stack-*
+RELEASE=master
+curl -s https://raw.githubusercontent.com/crossplaneio/crossplane-cli/"${RELEASE}"/bootstrap.sh | bash
+```
+
+The behavior is customizable via environment variables:
+
+```
+RELEASE=9760f8a7fd4fdd7f9a6cf3d5323a605412a65d11
+curl -s https://raw.githubusercontent.com/crossplaneio/crossplane-cli/"${RELEASE}"/bootstrap.sh | env PREFIX=${HOME} RELEASE=${RELEASE} bash
 ```
 
 ### Installing from source
@@ -28,6 +31,13 @@ everything with:
 
 ```
 rm /usr/local/bin/kubectl-crossplane-stack-*
+```
+
+Or, if you customized the installation prefix:
+
+```
+PREFIX=/thing
+rm "${PREFIX}"/bin/kubectl-crossplane-stack-*
 ```
 
 ### Uninstalling from source
@@ -101,13 +111,8 @@ Copy the plugins to somewhere on your `PATH`. If you have
 `/usr/local/bin` on your `PATH`, you can do it like this:
 
 ```
-curl -o /usr/local/bin/kubectl-crossplane-stack-build https://raw.githubusercontent.com/crossplaneio/crossplane-cli/master/bin/kubectl-crossplane-stack-build -s >/dev/null
-curl -o /usr/local/bin/kubectl-crossplane-stack-init https://raw.githubusercontent.com/crossplaneio/crossplane-cli/master/bin/kubectl-crossplane-stack-init -s >/dev/null
-curl -o /usr/local/bin/kubectl-crossplane-stack-publish https://raw.githubusercontent.com/crossplaneio/crossplane-cli/master/bin/kubectl-crossplane-stack-publish -s >/dev/null
-curl -o /usr/local/bin/kubectl-crossplane-stack-install https://raw.githubusercontent.com/crossplaneio/crossplane-cli/master/bin/kubectl-crossplane-stack-install -s >/dev/null
-curl -o /usr/local/bin/kubectl-crossplane-stack-uninstall https://raw.githubusercontent.com/crossplaneio/crossplane-cli/master/bin/kubectl-crossplane-stack-uninstall -s >/dev/null
-curl -o /usr/local/bin/kubectl-crossplane-stack-generate_install https://raw.githubusercontent.com/crossplaneio/crossplane-cli/master/bin/kubectl-crossplane-stack-generate_install -s >/dev/null
-chmod +x /usr/local/bin/kubectl-crossplane-stack-*
+RELEASE=master
+curl -s https://raw.githubusercontent.com/crossplaneio/crossplane-cli/"${RELEASE}"/bootstrap.sh | bash
 ```
 
 
