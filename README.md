@@ -229,7 +229,17 @@ $ kubectl logs crossplane-examples-hello-world-65d5c59976-vzppd | grep 'Hello Wo
 That's it! We've finished writing, building, and locally validating a
 stack!
 
-## Bonus: How to build for external publishing
+
+### Remove the stack
+
+When we're done with the stack and want to remove it and all its
+resources, we can `uninstall` it by name:
+
+```
+kubectl crossplane stack uninstall 'crossplane-examples-hello-world'
+```
+
+## How to build for external publishing
 After we finish developing a stack locally, we may want to publish it to
 an external registry. This section shows the commands to do that.
 
@@ -246,6 +256,9 @@ Once the stack is built, we can use the `publish` subcommand to publish
 it to the registry:
 
 ```
+# You may need to log into dockerhub or the docker registry that the
+# image is being pushed to. If that's the case, run:
+# $ docker login
 kubectl crossplane stack publish
 ```
 
@@ -257,6 +270,18 @@ the `install` command:
 ```
 kubectl crossplane stack install 'crossplane-examples/hello-world'
 ```
+
+### Uninstall
+Installing the stack can be done with some sample yaml which was
+generated for us by the `init` that we ran earlier, but it's a
+little easier to use the `uninstall` command:
+
+```
+kubectl crossplane stack uninstall 'crossplane-examples-hello-world'
+```
+
+Note that `uninstall` uses the stack's name (which has no `/` characters),
+while the `install` uses the image name (which uses `/`).
 
 
 [kubebuilder quick start]: https://book.kubebuilder.io/quick-start.html
