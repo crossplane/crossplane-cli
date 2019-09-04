@@ -1,6 +1,32 @@
 #!/usr/bin/env bash
 
 set -e
+
+function usage {
+  echo "Usage: kubectl crossplane stack publish [STACK_IMAGE_NAME]" >&2
+  echo "" >&2
+  echo "STACK_IMAGE_NAME is the name of the stack in the local docker image" >&2
+  echo "registry to publish. It will be passed to docker, so it can start with" >&2
+  echo "a local registry address to publish to a local registry. If unspecified," >&2
+  echo "it will use whatever name the project was initialized with." >&2
+  echo "" >&2
+  echo "Examples:" >&2
+  echo "" >&2
+  echo "Publish a stack using the default image name:" >&2
+  echo "kubectl crossplane stack publish" >&2
+  echo "" >&2
+  echo "Publish a stack to a local registry:" >&2
+  echo "kubectl crossplane stack publish localhost:5000/mystackname" >&2
+}
+
+# STACK_IMG is used by the build to specify the image name to use.
+# If we override it, it changes which image name is used for any
+# build, tag, or publish steps.
+if [[ $# -gt 0 ]]; then
+  STACK_IMG="${1}"
+  export STACK_IMG
+fi
+
 set -x
 
 make -f stack.Makefile publish
