@@ -1,0 +1,29 @@
+#!/usr/bin/env bash
+
+set -e
+
+function usage {
+  # The reason for putting stack name before stack image source is it seems like stack name
+  # would be overridden more often than stack image source, but I kept going back and
+  # forth on that originally. Overriding the source is very useful when developing a
+  # stack locally, for example.
+  echo "Usage: kubectl crossplane stack list [OPTIONS]" >&2
+  echo "" >&2
+  echo "Lists installed stacks. If any OPTIONS are provided, they will be passed" >&2
+  echo "through to kubectl." >&2
+  echo "" >&2
+  echo "If no OPTIONS are provided, stacks in all namespaces will be listed." >&2
+}
+
+if [[ "${1}" == "help" ]] ; then
+  usage
+  exit 1
+fi
+
+ALL_NAMESPACES='--all-namespaces'
+
+if [[ $# -gt 0 ]]; then
+  ALL_NAMESPACES=
+fi
+
+kubectl get stackrequests.stacks.crossplane.io ${ALL_NAMESPACES} "${@}"

@@ -55,6 +55,7 @@ kubectl crossplane stack init 'myname/mysubname'
 kubectl crossplane stack build
 kubectl crossplane stack publish
 kubectl crossplane stack install 'myname/mysubname'
+kubectl crossplane stack list
 kubectl crossplane stack uninstall 'myname-mysubname'
 ```
 
