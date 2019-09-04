@@ -18,4 +18,5 @@ curl -s -o "${PREFIX}"/bin/kubectl-crossplane-stack-publish https://raw.githubus
 curl -s -o "${PREFIX}"/bin/kubectl-crossplane-stack-install https://raw.githubusercontent.com/crossplaneio/crossplane-cli/"${RELEASE}"/bin/kubectl-crossplane-stack-install >/dev/null
 curl -s -o "${PREFIX}"/bin/kubectl-crossplane-stack-uninstall https://raw.githubusercontent.com/crossplaneio/crossplane-cli/"${RELEASE}"/bin/kubectl-crossplane-stack-uninstall >/dev/null
 curl -s -o "${PREFIX}"/bin/kubectl-crossplane-stack-generate_install https://raw.githubusercontent.com/crossplaneio/crossplane-cli/"${RELEASE}"/bin/kubectl-crossplane-stack-generate_install >/dev/null
+curl -s -o "${PREFIX}"/bin/kubectl-crossplane-stack-list https://raw.githubusercontent.com/crossplaneio/crossplane-cli/"${RELEASE}"/bin/kubectl-crossplane-stack-list >/dev/null
 chmod +x "${PREFIX}"/bin/kubectl-crossplane-stack-*
