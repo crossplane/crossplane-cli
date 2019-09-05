@@ -3,17 +3,26 @@
 set -e
 
 function usage {
-  echo "Usage: kubectl crossplane stack init STACK_NAME [DIRECTORY]" >&2
+  echo "Usage: kubectl crossplane stack init [-f|--force] STACK_NAME [DIRECTORY]" >&2
   echo "" >&2
   echo "STACK_NAME is used as the image name for the stack, and any '/' characters" >&2
   echo "are converted to '-' characters when populating kubernetes resource field names." >&2
   echo "" >&2
   echo "DIRECTORY defaults to the current directory." >&2
+  echo "" >&2
+  echo "-f, --force: force init when a previous 'stack init' is detected" >&2
 }
 
 if [[ $# -lt 1 ]] ; then
   usage
   exit 1
+fi
+
+FORCE_INIT=${1}
+if [ "${FORCE_INIT}" == "-f" -o "${FORCE_INIT}" == "--force" ]; then
+  shift
+else
+  FORCE_INIT=""
 fi
 
 STACK_NAME=${1}
@@ -108,6 +117,13 @@ spec:
         image: "localhost:5000/${STACK_IMAGE_NAME}"
 EOF
   echo 'Created config/stack/overrides/install.yaml' >&2
+}
+
+function check_for_existing_stack {
+  if [ -f "${INIT_DIR}/stack.env" -a -z "${FORCE_INIT}" ]; then
+    echo "Error: ${INIT_DIR}/stack.env already exists.  Use -f or --force to force init." >&2
+    return 1
+  fi
 }
 
 function create_build {
@@ -310,7 +326,10 @@ EOF
   fi
 }
 
-cd ${INIT_DIR}
+cd -- "${INIT_DIR}"
+
+check_for_existing_stack || exit 1
+
 create_dirs
 create_manifest
 create_samples
