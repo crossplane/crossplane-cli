@@ -15,10 +15,14 @@ function usage {
   echo "If no OPTIONS are provided, stacks in all namespaces will be listed." >&2
 }
 
-if [[ "${1}" == "help" ]] ; then
-  usage
-  exit 1
-fi
+function check_help {
+  if [ "${1}" == "-h" -o "${1}" == "--help" ] ; then
+    usage
+    exit 1
+  fi
+}
+
+check_help "${1}"
 
 ALL_NAMESPACES='--all-namespaces'
 

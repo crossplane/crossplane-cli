@@ -16,8 +16,17 @@ function usage {
   echo "kubectl crossplane stack publish" >&2
   echo "" >&2
   echo "Publish a stack to a local registry:" >&2
-  echo "kubectl crossplane stack publish localhost:5000/mystackname" >&2
+  echo "kubectl crossplane stack publish localhost:5000/mystackrepository/mystackimagename" >&2
 }
+
+function check_help {
+  if [ "${1}" == "-h" -o "${1}" == "--help" ] ; then
+    usage
+    exit 1
+  fi
+}
+
+check_help "${1}"
 
 # STACK_IMG is used by the build to specify the image name to use.
 # If we override it, it changes which image name is used for any

@@ -1,6 +1,25 @@
 #!/usr/bin/env bash
 
+function usage {
+  echo "Usage: kubectl crossplane stack build [ARGS ...]" >&2
+  echo "" >&2
+  echo "ARGS: An alternate recipe to build, or other arguments to pass through" >&2
+  echo 'to `make`.' >&2
+}
 
+function check_help {
+  if [ "${1}" == "-h" -o "${1}" == "--help" ] ; then
+    usage
+    exit 1
+  fi
+}
+
+check_help "${1}"
+
+# We could also have just passed all the arguments through
+# instead of extracting the command out, but it seems more
+# clear what is happening in the no-argument case if the
+# command is split out.
 COMMAND=${1:-build}
 shift
 
