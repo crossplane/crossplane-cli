@@ -5,7 +5,7 @@ default:
 .PHONY: default
 
 install:
-	ln -s $(abspath bin/kubectl-crossplane-stack-*) $(INSTALL_DIR)/
+	ln -si $(abspath bin/kubectl-crossplane-stack-*) $(INSTALL_DIR)/
 .PHONY: install
 
 uninstall:
