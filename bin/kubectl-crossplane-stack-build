@@ -1,10 +1,12 @@
 #!/usr/bin/env bash
 
 function usage {
-  echo "Usage: kubectl crossplane stack build [ARGS ...]" >&2
+  echo "Usage: kubectl crossplane stack [-h|--help] build [ARGS ...]" >&2
   echo "" >&2
   echo "ARGS: An alternate recipe to build, or other arguments to pass through" >&2
   echo 'to `make`.' >&2
+  echo "" >&2
+  echo "-h, --help: Print usage" >&2
 }
 
 function check_help {

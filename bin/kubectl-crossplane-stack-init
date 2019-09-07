@@ -3,7 +3,7 @@
 set -e
 
 function usage {
-  echo "Usage: kubectl crossplane stack init [-f|--force] STACK_NAME [DIRECTORY]" >&2
+  echo "Usage: kubectl crossplane stack init [-h|--help] [-f|--force] STACK_NAME [DIRECTORY]" >&2
   echo "" >&2
   echo "STACK_NAME is used as the image name for the stack, and any '/' characters" >&2
   echo "are converted to '-' characters when populating kubernetes resource field names." >&2
@@ -11,6 +11,7 @@ function usage {
   echo "DIRECTORY defaults to the current directory." >&2
   echo "" >&2
   echo "-f, --force: force init when a previous 'stack init' is detected" >&2
+  echo "-h, --help: Print usage" >&2
 }
 
 function check_help {

@@ -3,7 +3,7 @@
 set -e
 
 function usage {
-  echo "Usage: kubectl crossplane stack publish [STACK_IMAGE_NAME]" >&2
+  echo "Usage: kubectl crossplane stack publish [-h|--help] [STACK_IMAGE_NAME]" >&2
   echo "" >&2
   echo "STACK_IMAGE_NAME is the name of the stack in the local docker image" >&2
   echo "registry to publish. It will be passed to docker, so it can start with" >&2
@@ -17,6 +17,8 @@ function usage {
   echo "" >&2
   echo "Publish a stack to a local registry:" >&2
   echo "kubectl crossplane stack publish localhost:5000/mystackrepository/mystackimagename" >&2
+  echo "" >&2
+  echo "-h, --help: Print usage" >&2
 }
 
 function check_help {
