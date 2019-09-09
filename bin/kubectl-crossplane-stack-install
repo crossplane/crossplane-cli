@@ -7,14 +7,25 @@ function usage {
   # would be overridden more often than stack image source, but I kept going back and
   # forth on that originally. Overriding the source is very useful when developing a
   # stack locally, for example.
-  echo "Usage: kubectl crossplane stack install STACK_IMAGE_NAME [STACK_NAME [STACK_IMAGE_SOURCE]]" >&2
+  echo "Usage: kubectl crossplane stack install [-h|--help] STACK_IMAGE_NAME [STACK_NAME [STACK_IMAGE_SOURCE]]" >&2
   echo "" >&2
   echo "STACK_IMAGE_NAME is the name of the stack in the registry to install." >&2
   echo "If the STACK_NAME is not provided, the stack name will be the STACK_IMAGE_NAME with any '/' characters" >&2
   echo "converted to '-' characters." >&2
   echo "" >&2
+  echo "-h, --help: Print usage" >&2
+  echo "" >&2
   echo 'For more advanced usage, see the lower-level `kubectl crossplane stack generate-install` command.' >&2
 }
+
+function check_help {
+  if [ "${1}" == "-h" -o "${1}" == "--help" ] ; then
+    usage
+    exit 1
+  fi
+}
+
+check_help "${1}"
 
 if [[ $# -lt 1 ]] ; then
   usage

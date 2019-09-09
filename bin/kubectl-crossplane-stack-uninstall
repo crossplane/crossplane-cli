@@ -3,11 +3,22 @@
 set -e
 
 function usage {
-  echo "Usage: kubectl crossplane stack uninstall STACK_NAME [options ...]" >&2
+  echo "Usage: kubectl crossplane stack uninstall [-h|--help] STACK_NAME [options ...]" >&2
   echo "" >&2
   echo "STACK_NAME is the name of the stack to uninstall." >&2
   echo 'Namespace can also be passed, using the same syntax as a `kubectl delete` command.' >&2
+  echo "" >&2
+  echo "-h, --help: Print usage" >&2
 }
+
+function check_help {
+  if [ "${1}" == "-h" -o "${1}" == "--help" ] ; then
+    usage
+    exit 1
+  fi
+}
+
+check_help "${1}"
 
 if [[ $# -lt 1 ]] ; then
   usage
