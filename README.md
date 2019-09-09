@@ -65,6 +65,9 @@ This guide will show you the basics for using the Stacks CLI to create
 and develop a stack with a basic controller that responds to a certain
 type of object.
 
+This guide uses [kubebuilder version 2][kubebuilder quick start], but
+other approaches can be used too.
+
 Excluding installing prerequisites, it'll take about 5 minutes!
 
 ## Install prerequisites
@@ -76,8 +79,6 @@ things installed:
 * [docker](https://www.docker.com/products/docker-desktop)
 * [kubectl](https://kubernetes.io/docs/tasks/tools/install-kubectl/)
 * [kubebuilder, version 2][kubebuilder quick start]
-* [kustomize](https://github.com/kubernetes-sigs/kustomize/blob/master/docs/INSTALL.md)
-  (this is an optional dependency of kubebuilder and is not required)
 * [GNU make](https://www.gnu.org/software/make/)
 * bash
 * [crossplane](https://github.com/crossplaneio/crossplane),
@@ -87,7 +88,7 @@ things installed:
 `make` and `bash` are probably already installed if you're using a
 Unix-like environment or MacOS.
 
-### Install Kubebuilder
+### Installing Kubebuilder
 Instructions to install kubebuilder come from the [kubebuilder quick
 start][kubebuilder quick start], but are reproduced here for
 convenience.
@@ -122,6 +123,7 @@ First you'll need a folder to work with. Initializing it probably looks
 something like the following:
 
 ```
+mkdir helloworld
 cd helloworld
 git init
 ```
@@ -174,7 +176,7 @@ be in the `controllers/` directory:
 
 ```
 	// your logic here
-  r.Log.V(0).Info("Hello World!", "instance", req.NamespacedName)
+	r.Log.V(0).Info("Hello World!", "instance", req.NamespacedName)
 ```
 
 ## Build kubebuilder stuff
