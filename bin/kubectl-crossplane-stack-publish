@@ -36,6 +36,7 @@ check_help "${1}"
 if [[ $# -gt 0 ]]; then
   STACK_IMG="${1}"
   export STACK_IMG
+  shift
 fi
 
 set -x

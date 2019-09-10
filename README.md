@@ -89,6 +89,7 @@ things installed:
 Unix-like environment or MacOS.
 
 ### Installing Kubebuilder
+
 Instructions to install kubebuilder come from the [kubebuilder quick
 start][kubebuilder quick start], but are reproduced here for
 convenience.
@@ -107,6 +108,7 @@ export PATH=$PATH:/usr/local/kubebuilder/bin
 ```
 
 ## Install CLI
+
 Installing the `kubectl` plugins is pretty simple.
 
 Copy the plugins to somewhere on your `PATH`. If you have
@@ -117,8 +119,8 @@ RELEASE=master
 curl -s https://raw.githubusercontent.com/crossplaneio/crossplane-cli/"${RELEASE}"/bootstrap.sh | bash
 ```
 
-
 ## Init project folder
+
 First you'll need a folder to work with. Initializing it probably looks
 something like the following:
 
@@ -129,10 +131,12 @@ git init
 ```
 
 ## Init Kubebuilder project
+
 Once the project is initialized, we'll set it up as a kubebuilder
 project.
 
 ### Create a kubebuilder v2 project
+
 If your project is within the `GOPATH`, you can do:
 
 ```
@@ -147,6 +151,7 @@ of the `kubebuilder` commands, but it could also be set once at the
 beginning with `export GO111MODULE=on`, or set in other ways.
 
 ### Create an API
+
 Next, create an API using `kubebuilder`:
 
 ```
@@ -158,6 +163,7 @@ $ y
 ```
 
 ## Initialize the stack project
+
 Once the project is initialized as a kubebuilder project and the plugins
 are installed, we can initialize the project as a stack project using
 the `crossplane stack init` command.
@@ -169,6 +175,7 @@ kubectl crossplane stack init 'crossplane-examples/hello-world'
 ```
 
 ## Set up the Hello World
+
 Now we'll add some custom functionality to our controller.
 
 Add a "Hello World" log line to the kubebuilder controller, which should
@@ -180,6 +187,7 @@ be in the `controllers/` directory:
 ```
 
 ## Build kubebuilder stuff
+
 First, we'll want to build the binaries and yamls in the regular way.
 
 ```
@@ -192,6 +200,7 @@ During development, we'll often be building and testing our stack
 locally. The local validation section shows us how we would do that.
 
 ### Build stack and publish locally
+
 Once the (kubebuilder) project is built in the normal way, we want to
 bundle it all into a stack and publish the image locally:
 
@@ -200,6 +209,7 @@ kubectl crossplane stack build local-build
 ```
 
 ### Install stack locally
+
 When the stack is built, the next step is to install it into our
 Crossplane:
 
@@ -212,6 +222,7 @@ This can also be done using the sample local stack request that the
 command.
 
 ### Create an object for the stack to manage
+
 Once the stack is installed into our Crossplane, we can use one of the
 sample objects to create an object that the stack will respond to.
 
@@ -220,6 +231,7 @@ kubectl apply -f config/samples/*.yaml
 ```
 
 ### Check the stack's output
+
 Once the object has been created, we expect the controller to do
 something in response! In our case, we expect it to log a message.
 
@@ -248,10 +260,12 @@ kubectl crossplane stack uninstall 'crossplane-examples-hello-world'
 ```
 
 ## How to build for external publishing
+
 After we finish developing a stack locally, we may want to publish it to
 an external registry. This section shows the commands to do that.
 
 ### Build stack
+
 To build the stack, we use the `build` subcommand once the binaries and
 generated yamls have been built:
 
@@ -260,6 +274,7 @@ kubectl crossplane stack build
 ```
 
 ### Run publish
+
 Once the stack is built, we can use the `publish` subcommand to publish
 it to the registry:
 
@@ -271,6 +286,7 @@ kubectl crossplane stack publish
 ```
 
 ### Install
+
 Installing the stack can be done with a sample which was generated for
 us by the `init` that we ran earlier, but it's a little easier to use
 the `install` command:
@@ -280,6 +296,7 @@ kubectl crossplane stack install 'crossplane-examples/hello-world'
 ```
 
 ### Uninstall
+
 Installing the stack can be done with some sample yaml which was
 generated for us by the `init` that we ran earlier, but it's a
 little easier to use the `uninstall` command:
@@ -290,6 +307,26 @@ kubectl crossplane stack uninstall 'crossplane-examples-hello-world'
 
 Note that `uninstall` uses the stack's name (which has no `/` characters),
 while the `install` uses the image name (which uses `/`).
+
+# Recipes
+
+### Use a different image name when building and testing a stack locally
+
+```
+STACK_IMG=myprefix/myothername kubectl crossplane stack build
+STACK_IMG=myprefix/myothername kubectl crossplane stack publish
+```
+
+### Build locally with an overridden install.yaml
+
+We can specify a different build target to run:
+
+```
+kubectl crossplane stack build local-build
+```
+See the `config/stack/overrides` directory for details about where the
+overrides live. See the `stack.Makefile` for details about how
+`local-build` works.
 
 
 [kubebuilder quick start]: https://book.kubebuilder.io/quick-start.html
