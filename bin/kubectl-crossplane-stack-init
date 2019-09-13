@@ -3,7 +3,7 @@
 set -e
 
 function usage {
-  echo "Usage: kubectl crossplane stack init [-h|--help] [-f|--force] STACK_NAME [DIRECTORY]" >&2
+  echo "Usage: kubectl crossplane stack init [-h|--help] [-f|--force] [-c|--cluster] STACK_NAME [DIRECTORY]" >&2
   echo "" >&2
   echo "STACK_NAME is used as the image name for the stack, and any '/' characters" >&2
   echo "are converted to '-' characters when populating kubernetes resource field names." >&2
@@ -11,6 +11,7 @@ function usage {
   echo "DIRECTORY defaults to the current directory." >&2
   echo "" >&2
   echo "-f, --force: force init when a previous 'stack init' is detected" >&2
+  echo "-c, --cluster: use the Cluster Stack permission scope and generate ClusterStackInstall examples" >&2
   echo "-h, --help: Print usage" >&2
 }
 
@@ -35,6 +36,16 @@ else
   FORCE_INIT=""
 fi
 
+CLUSTER_OPT=${1}
+if [ "${CLUSTER_OPT}" == "-c" -o "${CLUSTER_OPT}" == "--cluster" ]; then
+  CLUSTER_STACK="Cluster"
+  STACK_SCOPE="Cluster"
+  shift
+else
+  CLUSTER_STACK=""
+  STACK_SCOPE="Namespaced"
+fi
+
 STACK_NAME=${1}
 # For kubernetes fields, we aren't able to use slashes, and
 # slashes are common for docker image names. So we remove the
@@ -52,7 +63,25 @@ function create_dirs {
 function create_manifest {
   mkdir -p config/stack/manifests
   touch config/stack/manifests/app.yaml
-  cat > config/stack/manifests/app.yaml <<'EOF'
+  cat > config/stack/manifests/app.yaml <<EOF
+title: ""
+description: ""
+version: 0.0.1
+maintainers:
+- name: ""
+  email: ""
+owners:
+- name: ""
+  email: ""
+company: ""
+category: ""
+keywords:
+ - "crossplane-cli"
+website: ""
+source: ""
+permissionScope: ${STACK_SCOPE}
+# License SPDX name: https://spdx.org/licenses/
+license: Apache-2.0
 EOF
 
   echo 'Created config/stack/manifests/app.yaml' >&2
@@ -97,7 +126,7 @@ function create_samples {
   cat > config/stack/samples/local.install.stack.yaml <<EOF
 ---
 apiVersion: stacks.crossplane.io/v1alpha1
-kind: StackRequest
+kind: ${CLUSTER_STACK}StackInstall
 metadata:
   name: "${KUBEY_STACK_NAME}"
 spec:
@@ -109,7 +138,7 @@ EOF
   cat > config/stack/samples/install.stack.yaml <<EOF
 ---
 apiVersion: stacks.crossplane.io/v1alpha1
-kind: StackRequest
+kind: ${CLUSTER_STACK}StackInstall
 metadata:
   name: "${KUBEY_STACK_NAME}"
 spec:
@@ -172,10 +201,6 @@ EOF
 STACK_IMG ?= ${STACK_NAME}:latest
 
 CRD_DIR ?= config/crd/bases
-# Files matching this glob will be placed into the stack's
-# rbac.yaml. It could be multiple filenames or multiple
-# glob patterns.
-RBAC_GLOB ?= config/rbac/role.yaml
 STACK_PACKAGE_REGISTRY_SOURCE ?= config/stack/manifests
 LOCAL_OVERRIDES_DIR ?= config/stack/overrides
 CONFIG_SAMPLES_DIR ?= config/stack/samples
@@ -222,7 +247,7 @@ publish: docker-push
 # Initialize the stack bundle folder
 $(STACK_PACKAGE_REGISTRY):
 	mkdir -p $(STACK_PACKAGE_REGISTRY)/resources
-	touch $(STACK_PACKAGE_REGISTRY)/app.yaml $(STACK_PACKAGE_REGISTRY)/install.yaml $(STACK_PACKAGE_REGISTRY)/rbac.yaml
+	touch $(STACK_PACKAGE_REGISTRY)/app.yaml $(STACK_PACKAGE_REGISTRY)/install.yaml
 
 bundle: $(STACK_PACKAGE_REGISTRY)
 	# Copy CRDs over
@@ -238,9 +263,6 @@ bundle: $(STACK_PACKAGE_REGISTRY)
 		$(STACK_PACKAGE_REGISTRY)/resources/$$( basename $${filename/.yaml/.crd.yaml} ) \
 		; done
 
-	# If RBAC_GLOB is set *and* there is an rbac.yaml in the registry
-	# source folder, the registry source will win.
-	cat $(RBAC_GLOB) > $(STACK_PACKAGE_REGISTRY)/rbac.yaml
 	cp -r $(STACK_PACKAGE_REGISTRY_SOURCE)/* $(STACK_PACKAGE_REGISTRY)
 .PHONY: bundle
 

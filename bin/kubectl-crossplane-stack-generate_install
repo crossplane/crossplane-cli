@@ -7,13 +7,14 @@ function usage {
   # would be overridden more often than stack image source, but I kept going back and
   # forth on that originally. Overriding the source is very useful when developing a
   # stack locally, for example.
-  echo "Usage: kubectl crossplane stack generate-install [-h|--help] STACK_IMAGE_NAME [STACK_NAME [STACK_IMAGE_SOURCE]]" >&2
+  echo "Usage: kubectl crossplane stack generate-install [-h|--help] [-c|--cluster] STACK_IMAGE_NAME [STACK_NAME [STACK_IMAGE_SOURCE]]" >&2
   echo "" >&2
   echo "STACK_IMAGE_NAME is the name of the stack in the registry to install." >&2
   echo "If the STACK_NAME is not provided, the stack name will be the STACK_IMAGE_NAME with any '/' characters" >&2
   echo "converted to '-' characters." >&2
   echo "" >&2
   echo "-h, --help: Print usage" >&2
+  echo "-c, --cluster: generate a ClusterStackInstall for Stacks with Cluster permission scope" >&2
 }
 
 function check_help {
@@ -28,6 +29,14 @@ check_help "${1}"
 if [[ $# -lt 1 ]] ; then
   usage
   exit 1
+fi
+
+CLUSTER_OPT="${1}"
+if [ "${CLUSTER_OPT}" == "-c" -o "${CLUSTER_OPT}" == "--cluster" ]; then
+  CLUSTER_STACK="Cluster"
+  shift
+else
+  CLUSTER_STACK=""
 fi
 
 STACK_IMAGE_NAME="${1}"
@@ -54,7 +63,7 @@ fi
 
 INSTALL_YAML="$( cat <<EOF
 apiVersion: stacks.crossplane.io/v1alpha1
-kind: StackRequest
+kind: ${CLUSTER_STACK}StackInstall
 metadata:
   name: "${STACK_NAME}"
 spec:
