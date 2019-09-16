@@ -32,4 +32,4 @@ if [[ $# -gt 0 ]]; then
   ALL_NAMESPACES=
 fi
 
-kubectl get stackrequests.stacks.crossplane.io ${ALL_NAMESPACES} "${@}"
+kubectl get stackinstalls.stacks.crossplane.io,clusterstackinstalls.stacks.crossplane.io ${ALL_NAMESPACES} "${@}"

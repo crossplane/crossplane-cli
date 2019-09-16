@@ -7,13 +7,14 @@ function usage {
   # would be overridden more often than stack image source, but I kept going back and
   # forth on that originally. Overriding the source is very useful when developing a
   # stack locally, for example.
-  echo "Usage: kubectl crossplane stack install [-h|--help] STACK_IMAGE_NAME [STACK_NAME [STACK_IMAGE_SOURCE]]" >&2
+  echo "Usage: kubectl crossplane stack install [-h|--help] [-c|--cluster] STACK_IMAGE_NAME [STACK_NAME [STACK_IMAGE_SOURCE]]" >&2
   echo "" >&2
   echo "STACK_IMAGE_NAME is the name of the stack in the registry to install." >&2
   echo "If the STACK_NAME is not provided, the stack name will be the STACK_IMAGE_NAME with any '/' characters" >&2
   echo "converted to '-' characters." >&2
   echo "" >&2
   echo "-h, --help: Print usage" >&2
+  echo "-c, --cluster: Uninstall a Cluster scoped stack" >&2
   echo "" >&2
   echo 'For more advanced usage, see the lower-level `kubectl crossplane stack generate-install` command.' >&2
 }
@@ -32,6 +33,15 @@ if [[ $# -lt 1 ]] ; then
   exit 1
 fi
 
+CLUSTER_OPT=${1}
+if [ "${CLUSTER_OPT}" == "-c" -o "${CLUSTER_OPT}" == "--cluster" ]; then
+  CLUSTER_STACK="cluster"
+  shift
+else
+  CLUSTER_OPT=""
+  CLUSTER_STACK=""
+fi
+
 STACK_IMAGE_NAME="${1}"
 # For kubernetes fields, we aren't able to use slashes, and
 # slashes are common for docker image names. So we remove the
@@ -41,8 +51,8 @@ KUBEY_STACK_IMAGE_NAME=$( echo "${STACK_IMAGE_NAME}" | tr '/' '-' )
 # by passing arguments
 STACK_NAME="${2:-${KUBEY_STACK_IMAGE_NAME}}"
 
-kubectl crossplane stack generate-install "$@" | kubectl apply -f -
-# Printing out the stack request object from the cluster may be useful
+kubectl crossplane stack generate-install ${CLUSTER_OPT} "$@" | kubectl apply -f -
+# Printing out the stack install object from the cluster may be useful
 # for whoever ran this command, and there's no other output anyway, so
 # we might as well.
-kubectl get -o yaml stackrequest "${STACK_NAME}"
+kubectl get -o yaml "${CLUSTER_STACK}"stackinstall "${STACK_NAME}"

@@ -217,7 +217,7 @@ Crossplane:
 kubectl crossplane stack install 'crossplane-examples/hello-world' 'crossplane-examples-hello-world' localhost:5000
 ```
 
-This can also be done using the sample local stack request that the
+This can also be done using the sample local stack install that the
 `init` command generates, but it's a good habit to use the `install`
 command.
 
