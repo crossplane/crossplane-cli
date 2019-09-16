@@ -65,7 +65,9 @@ function create_manifest {
   touch config/stack/manifests/app.yaml
   cat > config/stack/manifests/app.yaml <<EOF
 title: ""
-description: ""
+readme: ""
+overview: ""
+overviewShort: ""
 version: 0.0.1
 maintainers:
 - name: ""

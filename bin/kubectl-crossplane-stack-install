@@ -51,7 +51,7 @@ KUBEY_STACK_IMAGE_NAME=$( echo "${STACK_IMAGE_NAME}" | tr '/' '-' )
 # by passing arguments
 STACK_NAME="${2:-${KUBEY_STACK_IMAGE_NAME}}"
 
-kubectl crossplane stack generate-install "${CLUSTER_OPT}" "$@" | kubectl apply -f -
+kubectl crossplane stack generate-install ${CLUSTER_OPT} "$@" | kubectl apply -f -
 # Printing out the stack install object from the cluster may be useful
 # for whoever ran this command, and there's no other output anyway, so
 # we might as well.
