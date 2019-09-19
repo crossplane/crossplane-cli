@@ -167,7 +167,7 @@ the `crossplane stack init` command.
 From within the project directory:
 
 ```
-kubectl crossplane stack init 'crossplane-examples/hello-world'
+kubectl crossplane stack init --cluster 'crossplane-examples/hello-world'
 ```
 
 ## Set up the Hello World
@@ -210,7 +210,7 @@ When the stack is built, the next step is to install it into our
 Crossplane:
 
 ```
-kubectl crossplane stack install 'crossplane-examples/hello-world' 'crossplane-examples-hello-world' localhost:5000
+kubectl crossplane stack install --cluster 'crossplane-examples/hello-world' 'crossplane-examples-hello-world' localhost:5000
 ```
 
 This can also be done using the sample local stack install that the
@@ -252,7 +252,7 @@ When we're done with the stack and want to remove it and all its
 resources, we can `uninstall` it by name:
 
 ```
-kubectl crossplane stack uninstall 'crossplane-examples-hello-world'
+kubectl crossplane stack uninstall --cluster 'crossplane-examples-hello-world'
 ```
 
 ## How to build for external publishing
@@ -288,7 +288,7 @@ us by the `init` that we ran earlier, but it's a little easier to use
 the `install` command:
 
 ```
-kubectl crossplane stack install 'crossplane-examples/hello-world'
+kubectl crossplane stack install --cluster 'crossplane-examples/hello-world'
 ```
 
 ### Uninstall
@@ -298,7 +298,7 @@ generated for us by the `init` that we ran earlier, but it's a
 little easier to use the `uninstall` command:
 
 ```
-kubectl crossplane stack uninstall 'crossplane-examples-hello-world'
+kubectl crossplane stack uninstall --cluster 'crossplane-examples-hello-world'
 ```
 
 Note that `uninstall` uses the stack's name (which has no `/` characters),
