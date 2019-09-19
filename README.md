@@ -5,7 +5,7 @@
 Here's the one-liner to do it:
 
 ```
-RELEASE=master && curl -s https://raw.githubusercontent.com/crossplaneio/crossplane-cli/"${RELEASE}"/bootstrap.sh | RELEASE=${RELEASE} bash
+RELEASE=master && curl -sL https://raw.githubusercontent.com/crossplaneio/crossplane-cli/"${RELEASE}"/bootstrap.sh | RELEASE=${RELEASE} bash
 ```
 
 The behavior is customizable via environment variables:
@@ -13,7 +13,7 @@ The behavior is customizable via environment variables:
 ```
 RELEASE=9760f8a7fd4fdd7f9a6cf3d5323a605412a65d11
 PREFIX=${HOME}
-curl -s https://raw.githubusercontent.com/crossplaneio/crossplane-cli/"${RELEASE}"/bootstrap.sh | env PREFIX=${PREFIX} RELEASE=${RELEASE} bash
+curl -sL https://raw.githubusercontent.com/crossplaneio/crossplane-cli/"${RELEASE}"/bootstrap.sh | env PREFIX=${PREFIX} RELEASE=${RELEASE} bash
 ```
 
 ### Installing from source
@@ -116,7 +116,7 @@ Copy the plugins to somewhere on your `PATH`. If you have
 `/usr/local/bin` on your `PATH`, you can do it like this:
 
 ```
-RELEASE=master && curl -s https://raw.githubusercontent.com/crossplaneio/crossplane-cli/"${RELEASE}"/bootstrap.sh | RELEASE=${RELEASE} bash
+RELEASE=master && curl -sL https://raw.githubusercontent.com/crossplaneio/crossplane-cli/"${RELEASE}"/bootstrap.sh | RELEASE=${RELEASE} bash
 ```
 
 ## Init project folder
