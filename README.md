@@ -155,11 +155,7 @@ beginning with `export GO111MODULE=on`, or set in other ways.
 Next, create an API using `kubebuilder`:
 
 ```
-$ GO111MODULE=on kubebuilder create api --group samples --version v1alpha1 --kind HelloWorld
-> Create Resource [y/n]
-$ y
-> Create Controller [y/n]
-$ y
+yes y | GO111MODULE=on kubebuilder create api --group samples --version v1alpha1 --kind HelloWorld
 ```
 
 ## Initialize the stack project
