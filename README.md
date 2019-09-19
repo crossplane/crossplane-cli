@@ -5,15 +5,15 @@
 Here's the one-liner to do it:
 
 ```
-RELEASE=master
-curl -s https://raw.githubusercontent.com/crossplaneio/crossplane-cli/"${RELEASE}"/bootstrap.sh | bash
+RELEASE=master && curl -sL https://raw.githubusercontent.com/crossplaneio/crossplane-cli/"${RELEASE}"/bootstrap.sh | RELEASE=${RELEASE} bash
 ```
 
 The behavior is customizable via environment variables:
 
 ```
 RELEASE=9760f8a7fd4fdd7f9a6cf3d5323a605412a65d11
-curl -s https://raw.githubusercontent.com/crossplaneio/crossplane-cli/"${RELEASE}"/bootstrap.sh | env PREFIX=${HOME} RELEASE=${RELEASE} bash
+PREFIX=${HOME}
+curl -sL https://raw.githubusercontent.com/crossplaneio/crossplane-cli/"${RELEASE}"/bootstrap.sh | env PREFIX=${PREFIX} RELEASE=${RELEASE} bash
 ```
 
 ### Installing from source
@@ -55,6 +55,7 @@ kubectl crossplane stack init 'myname/mysubname'
 kubectl crossplane stack build
 kubectl crossplane stack publish
 kubectl crossplane stack install 'myname/mysubname'
+kubectl crossplane stack generate-install 'myname/mysubname' | kubectl apply --namespace mynamespace -f -
 kubectl crossplane stack list
 kubectl crossplane stack uninstall 'myname-mysubname'
 ```
@@ -115,8 +116,7 @@ Copy the plugins to somewhere on your `PATH`. If you have
 `/usr/local/bin` on your `PATH`, you can do it like this:
 
 ```
-RELEASE=master
-curl -s https://raw.githubusercontent.com/crossplaneio/crossplane-cli/"${RELEASE}"/bootstrap.sh | bash
+RELEASE=master && curl -sL https://raw.githubusercontent.com/crossplaneio/crossplane-cli/"${RELEASE}"/bootstrap.sh | RELEASE=${RELEASE} bash
 ```
 
 ## Init project folder
@@ -155,11 +155,7 @@ beginning with `export GO111MODULE=on`, or set in other ways.
 Next, create an API using `kubebuilder`:
 
 ```
-$ GO111MODULE=on kubebuilder create api --group samples --version v1alpha1 --kind HelloWorld
-> Create Resource [y/n]
-$ y
-> Create Controller [y/n]
-$ y
+yes y | GO111MODULE=on kubebuilder create api --group samples --version v1alpha1 --kind HelloWorld
 ```
 
 ## Initialize the stack project
@@ -171,7 +167,7 @@ the `crossplane stack init` command.
 From within the project directory:
 
 ```
-kubectl crossplane stack init 'crossplane-examples/hello-world'
+kubectl crossplane stack init --cluster 'crossplane-examples/hello-world'
 ```
 
 ## Set up the Hello World
@@ -214,7 +210,7 @@ When the stack is built, the next step is to install it into our
 Crossplane:
 
 ```
-kubectl crossplane stack install 'crossplane-examples/hello-world' 'crossplane-examples-hello-world' localhost:5000
+kubectl crossplane stack install --cluster 'crossplane-examples/hello-world' 'crossplane-examples-hello-world' localhost:5000
 ```
 
 This can also be done using the sample local stack install that the
@@ -256,7 +252,7 @@ When we're done with the stack and want to remove it and all its
 resources, we can `uninstall` it by name:
 
 ```
-kubectl crossplane stack uninstall 'crossplane-examples-hello-world'
+kubectl crossplane stack uninstall --cluster 'crossplane-examples-hello-world'
 ```
 
 ## How to build for external publishing
@@ -292,7 +288,7 @@ us by the `init` that we ran earlier, but it's a little easier to use
 the `install` command:
 
 ```
-kubectl crossplane stack install 'crossplane-examples/hello-world'
+kubectl crossplane stack install --cluster 'crossplane-examples/hello-world'
 ```
 
 ### Uninstall
@@ -302,7 +298,7 @@ generated for us by the `init` that we ran earlier, but it's a
 little easier to use the `uninstall` command:
 
 ```
-kubectl crossplane stack uninstall 'crossplane-examples-hello-world'
+kubectl crossplane stack uninstall --cluster 'crossplane-examples-hello-world'
 ```
 
 Note that `uninstall` uses the stack's name (which has no `/` characters),
