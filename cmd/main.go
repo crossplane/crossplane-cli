@@ -37,12 +37,12 @@ func main() {
 	if subcommand != "trace" {
 		failWithMessage("currently only \"trace\" subcommand is supported")
 	}
-	kind := pflag.Arg(1)
+	resource := pflag.Arg(1)
 	resourceName := pflag.Arg(2)
-	if kind == "" || resourceName == "" {
-		failWithMessage("missing arguments: SUBCOMMAND KIND NAME [-n|--namespace NAMESPACE]")
+	if resource == "" || resourceName == "" {
+		failWithMessage("missing arguments: SUBCOMMAND TYPE[.GROUP] NAME [-n|--namespace NAMESPACE]")
 	}
-	fmt.Fprintf(os.Stderr, "Collecting information for %s %s in namespace %s...\n\n", kind, resourceName, namespace)
+	fmt.Fprintf(os.Stderr, "Collecting information for %s %s in namespace %s...\n\n", resource, resourceName, namespace)
 
 	config, err := clientcmd.BuildConfigFromFlags("", kubeconfig)
 	if err != nil {
@@ -65,7 +65,7 @@ func main() {
 	rMapper := restmapper.NewShortcutExpander(mapper, discoveryClient)
 
 	g := trace.NewKubeGraphBuilder(client, rMapper)
-	_, traversed, err := g.BuildGraph(resourceName, namespace, kind)
+	_, traversed, err := g.BuildGraph(resourceName, namespace, resource)
 	if err != nil {
 		failWithMessage(err.Error())
 	}

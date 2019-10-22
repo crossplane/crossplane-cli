@@ -30,14 +30,19 @@ func NewKubeGraphBuilder(client dynamic.Interface, restMapper meta.RESTMapper) *
 	}
 }
 
-func (g *KubeGraphBuilder) BuildGraph(name, namespace, kind string) (root *Node, traversed []*Node, err error) {
+func (g *KubeGraphBuilder) BuildGraph(name, namespace, groupRes string) (root *Node, traversed []*Node, err error) {
 	queue := list.New()
 
 	traversed = make([]*Node, 0)
 
 	u := &unstructured.Unstructured{Object: map[string]interface{}{}}
 
-	u.SetKind(kind)
+	gr := schema.ParseGroupResource(groupRes)
+	u.SetGroupVersionKind(schema.GroupVersionKind{
+		Group:   gr.Group,
+		Version: "",
+		Kind:    gr.Resource,
+	})
 	u.SetName(name)
 	u.SetNamespace(namespace)
 
@@ -52,7 +57,7 @@ func (g *KubeGraphBuilder) BuildGraph(name, namespace, kind string) (root *Node,
 	}
 	if root.state == NodeStateMissing {
 		return root, nil, errors.New(
-			fmt.Sprintf("Object to trace is not found: \"%s\" \"%s\" in namespace \"%s\"", kind, name, namespace))
+			fmt.Sprintf("Object to trace is not found: \"%s\" \"%s\" in namespace \"%s\"", groupRes, name, namespace))
 	}
 
 	// TODO(hasan): figure out if visited can be enough without traversed.
