@@ -19,26 +19,28 @@ import (
 )
 
 func main() {
+	var help bool
 	var kubeconfig string
 	var namespace string
 	var outputFormat string
 	if home := homedir.HomeDir(); home != "" {
-		pflag.StringVar(&kubeconfig, "kubeconfig", filepath.Join(home, ".kube", "config"), "(optional) absolute path to the kubeconfig file")
+		pflag.StringVar(&kubeconfig, "kubeconfig", filepath.Join(home, ".kube", "config"), "(optional) Absolute path to the kubeconfig file")
 	} else {
-		pflag.StringVar(&kubeconfig, "kubeconfig", "", "absolute path to the kubeconfig file")
+		pflag.StringVar(&kubeconfig, "kubeconfig", "", "Absolute path to the kubeconfig file")
 	}
 
-	pflag.StringVarP(&namespace, "namespace", "n", "default", "namespace")
-	pflag.StringVarP(&outputFormat, "outputFormat", "o", "", "Output format. One of: dot|yaml|json")
-
+	pflag.BoolVarP(&help, "help", "h", false, "Shows this help message")
+	pflag.StringVarP(&namespace, "namespace", "n", "default", "Namespace")
+	pflag.StringVarP(&outputFormat, "outputFormat", "o", "", "Output format. One of: dot")
 	pflag.Parse()
-	// TODO(hasan): Consider using parsing libraries (e.g. cobra)
-	subcommand := pflag.Arg(0)
-	if subcommand != "trace" {
-		failWithMessage("currently only \"trace\" subcommand is supported")
+
+	if help {
+		printHelp()
+		os.Exit(0)
 	}
-	resource := pflag.Arg(1)
-	resourceName := pflag.Arg(2)
+
+	resource := pflag.Arg(0)
+	resourceName := pflag.Arg(1)
 	if resource == "" || resourceName == "" {
 		failWithMessage("missing arguments: SUBCOMMAND TYPE[.GROUP] NAME [-n|--namespace NAMESPACE]")
 	}
@@ -91,4 +93,11 @@ func main() {
 func failWithMessage(msg string) {
 	fmt.Fprintln(os.Stderr, msg)
 	os.Exit(-1)
+}
+
+func printHelp() {
+	fmt.Fprintf(os.Stderr, `Usage: kubectl crossplane trace TYPE[.GROUP] NAME [-n| --namespace NAMESPACE] [-h|--help]
+
+`)
+	pflag.PrintDefaults()
 }
