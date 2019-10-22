@@ -50,12 +50,12 @@ func (o *Managed) GetRelated(filterByLabel func(metav1.GroupVersionKind, string,
 
 	// Get write to secret reference
 	u, err = getObjRef(obj, fieldsWriteConnSecret)
-	u.SetAPIVersion("v1")
-	u.SetKind("Secret")
-	u.SetNamespace(o.u.GetNamespace())
 	if err != nil {
 		return related, err
 	}
+	u.SetAPIVersion("v1")
+	u.SetKind("Secret")
+	u.SetNamespace(o.u.GetNamespace())
 	related = append(related, u)
 
 	return related, nil
