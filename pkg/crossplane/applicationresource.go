@@ -47,6 +47,28 @@ func (o *ApplicationResource) GetStatus() string {
 func (o *ApplicationResource) GetAge() string {
 	return GetAge(o.u)
 }
+
+func (o *ApplicationResource) GetObjectDetails() ObjectDetails {
+	u := o.u
+	if u == nil {
+		return ObjectDetails{}
+	}
+	od := getObjectDetails(o.u)
+
+	apcs := make([]map[string]string, 0)
+	apcs = append(apcs, getColumn("NAME", u.GetName()))
+	apcs = append(apcs, getColumn("TEMPLATE-KIND", getNestedString(o.u.Object, fieldsAppResTemplateKind...)))
+	apcs = append(apcs, getColumn("TEMPLATE-NAME", getNestedString(o.u.Object, fieldsAppResTemplateName...)))
+	apcs = append(apcs, getColumn("CLUSTER", getNestedString(o.u.Object, fieldsStatusClusterRefName...)))
+	apcs = append(apcs, getColumn("STATUS", getNestedString(o.u.Object, fieldsStatusState...)))
+
+	od.AdditionalPrinterColumns = apcs
+
+	od.RemoteStatus = o.getRemoteStatus()
+
+	return od
+}
+
 func GetBytes(key interface{}) ([]byte, error) {
 	var buf bytes.Buffer
 	enc := gob.NewEncoder(&buf)

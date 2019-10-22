@@ -29,6 +29,9 @@ var (
 	conditionKeyReason             = "reason"
 	conditionKeyMessage            = "message"
 
+	keyColumnName  = "name"
+	keyColumnValue = "value"
+
 	resourceDetailsTemplate = `%v: %v
 
 State: %v
@@ -168,4 +171,46 @@ func getKindsFromGroupKinds(allGks ...[]string) []string {
 		}
 	}
 	return allKinds
+}
+
+func getColumn(name, value string) map[string]string {
+	c := make(map[string]string)
+	c[keyColumnName] = name
+	c[keyColumnValue] = value
+	return c
+}
+
+func getObjectDetails(u *unstructured.Unstructured) ObjectDetails {
+	if u == nil {
+		return ObjectDetails{}
+	}
+	od := ObjectDetails{
+		Kind:      u.GetKind(),
+		Name:      u.GetName(),
+		Namespace: u.GetNamespace(),
+	}
+
+	conditions := make([]map[string]string, 0)
+	cs, f, err := unstructured.NestedSlice(u.Object, fieldsConditionedStatusConditions...)
+	if err == nil && f {
+		for _, c := range cs {
+			condition := make(map[string]string)
+			cMap := c.(map[string]interface{})
+			if cMap == nil {
+				condition[conditionKeyMessage] = "<error: condition status is not a map>"
+				continue
+			}
+
+			condition[conditionKeyType] = getNestedString(cMap, conditionKeyType)
+			condition[conditionKeyStatus] = getNestedString(cMap, conditionKeyStatus)
+			condition[conditionKeyLastTransitionTime] = getNestedString(cMap, conditionKeyLastTransitionTime)
+			condition[conditionKeyReason] = getNestedString(cMap, conditionKeyReason)
+			condition[conditionKeyMessage] = getNestedString(cMap, conditionKeyMessage)
+
+			conditions = append(conditions, condition)
+		}
+		od.Conditions = conditions
+	}
+
+	return od
 }

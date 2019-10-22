@@ -26,6 +26,13 @@ func (o *Provider) GetAge() string {
 	return GetAge(o.u)
 }
 
+func (o *Provider) GetObjectDetails() ObjectDetails {
+	if o.u == nil {
+		return ObjectDetails{}
+	}
+	return getObjectDetails(o.u)
+}
+
 func (o *Provider) GetDetails() string {
 	return ""
 }

@@ -26,6 +26,14 @@ func (o *NonPortableClass) GetAge() string {
 func (o *NonPortableClass) GetStatus() string {
 	return "N/A"
 }
+
+func (o *NonPortableClass) GetObjectDetails() ObjectDetails {
+	if o.u == nil {
+		return ObjectDetails{}
+	}
+	return getObjectDetails(o.u)
+}
+
 func (o *NonPortableClass) GetDetails() string {
 	return ""
 }

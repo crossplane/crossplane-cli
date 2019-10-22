@@ -25,6 +25,13 @@ func (o *Claim) GetAge() string {
 	return GetAge(o.u)
 }
 
+func (o *Claim) GetObjectDetails() ObjectDetails {
+	if o.u == nil {
+		return ObjectDetails{}
+	}
+	return getObjectDetails(o.u)
+}
+
 func (o *Claim) GetDetails() string {
 	return getResourceDetails(o.u)
 }

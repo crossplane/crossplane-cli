@@ -2,6 +2,7 @@ package crossplane
 
 import (
 	"fmt"
+	"strconv"
 
 	"k8s.io/apimachinery/pkg/api/meta"
 
@@ -41,6 +42,25 @@ func (o *Application) GetAge() string {
 	return GetAge(o.u)
 }
 
+func (o *Application) GetObjectDetails() ObjectDetails {
+	u := o.u
+	if u == nil {
+		return ObjectDetails{}
+	}
+	od := getObjectDetails(o.u)
+
+	apcs := make([]map[string]string, 0)
+	apcs = append(apcs, getColumn("NAME", u.GetName()))
+	apcs = append(apcs, getColumn("CLUSTER", getNestedString(o.u.Object, fieldsStatusClusterRefName...)))
+	apcs = append(apcs, getColumn("STATUS", o.GetStatus()))
+	apcs = append(apcs, getColumn("DESIRED", strconv.Itoa(int(getNestedInt64(o.u.Object, fieldsAppDesiredRes...)))))
+	apcs = append(apcs, getColumn("SUBMITTED", strconv.Itoa(int(getNestedInt64(o.u.Object, fieldsAppSubmittedRes...)))))
+
+	od.AdditionalPrinterColumns = apcs
+
+	return od
+}
+
 func (o *Application) GetDetails() string {
 	d := fmt.Sprintf(applicationDetailsTemplate, o.u.GetKind(),
 		o.u.GetName(), getNestedString(o.u.Object, fieldsStatusClusterRefName...),
@@ -58,7 +78,6 @@ func (o *Application) GetDetails() string {
 			d = d + "<error: condition status is not a map>"
 			continue
 		}
-		getNestedString(cMap, conditionKeyType)
 
 		d = d + fmt.Sprintf("%v\t%v\t%v\t%v\t%v\t\n",
 			getNestedString(cMap, conditionKeyType),

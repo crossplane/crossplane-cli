@@ -81,9 +81,24 @@ var (
 
 type Object interface {
 	GetStatus() string
+	GetObjectDetails() ObjectDetails
 	GetDetails() string
 	GetAge() string
 	GetRelated(filterByLabel func(metav1.GroupVersionKind, string, string) ([]unstructured.Unstructured, error)) ([]*unstructured.Unstructured, error)
+}
+
+type ObjectDetails struct {
+	// Common details for all objects
+	Kind       string
+	Name       string
+	Namespace  string
+	Conditions []map[string]string
+
+	// Details available only for a subset of objects
+	RemoteStatus string
+
+	// Each object provides own AdditionalPrinterColumns
+	AdditionalPrinterColumns []map[string]string
 }
 
 func ObjectFromUnstructured(u *unstructured.Unstructured) (Object, error) {

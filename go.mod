@@ -7,6 +7,7 @@ require (
 	github.com/fatih/color v1.7.0
 	github.com/gogo/protobuf v1.2.2-0.20190723190241-65acae22fc9d // indirect
 	github.com/google/btree v1.0.0 // indirect
+	github.com/google/go-cmp v0.3.1
 	github.com/googleapis/gnostic v0.3.1 // indirect
 	github.com/gregjones/httpcache v0.0.0-20190611155906-901d90724c79 // indirect
 	github.com/imdario/mergo v0.3.8 // indirect

@@ -98,6 +98,8 @@ func (p *SimplePrinter) printDetails(nodes []*Node) error {
 		if c == nil {
 			continue
 		}
+		// TODO(hasan): How to print details should be responsibility of simple printer and not crossplane objects.
+		//  Needs refactoring accoringly.
 		d := c.GetDetails()
 		if d != "" {
 			d += "\n---\n\n"
