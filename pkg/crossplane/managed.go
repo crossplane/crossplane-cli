@@ -5,6 +5,10 @@ import (
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 )
 
+var (
+	fieldsManagedClaim = append(fieldsSpec, "claimRef")
+)
+
 type Managed struct {
 	u *unstructured.Unstructured
 }
@@ -31,21 +35,21 @@ func (o *Managed) GetRelated(filterByLabel func(metav1.GroupVersionKind, string,
 	obj := o.u.Object
 
 	// Get claim reference
-	u, err := getObjRef(obj, claimRefPath)
+	u, err := getObjRef(obj, fieldsManagedClaim)
 	if err != nil {
 		return related, err
 	}
 	related = append(related, u)
 
 	// Get class reference
-	u, err = getObjRef(obj, resourceClassRefPath)
+	u, err = getObjRef(obj, fieldsResourceClass)
 	if err != nil {
 		return related, err
 	}
 	related = append(related, u)
 
 	// Get write to secret reference
-	u, err = getObjRef(obj, resourceSecretRefPath)
+	u, err = getObjRef(obj, fieldsWriteConnSecret)
 	u.SetAPIVersion("v1")
 	u.SetKind("Secret")
 	u.SetNamespace(o.u.GetNamespace())

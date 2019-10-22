@@ -5,6 +5,10 @@ import (
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 )
 
+var (
+	fieldsPCClass = []string{"classRef"}
+)
+
 type PortableClass struct {
 	u *unstructured.Unstructured
 }
@@ -29,7 +33,7 @@ func (o *PortableClass) GetRelated(filterByLabel func(metav1.GroupVersionKind, s
 	obj := o.u.Object
 
 	// Get class reference
-	u, err := getObjRef(obj, classRefPath)
+	u, err := getObjRef(obj, fieldsPCClass)
 	if err != nil {
 		return related, err
 	}

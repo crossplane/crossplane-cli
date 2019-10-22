@@ -13,6 +13,12 @@ import (
 )
 
 var (
+	fieldsAppResSecrets      = append(fieldsSpec, "secrets")
+	fieldsAppResTemplate     = append(fieldsSpec, "template")
+	fieldsAppResTemplateKind = append(fieldsAppResTemplate, "kind")
+	fieldsAppResTemplateName = append(fieldsAppResTemplate, "metadata", "name")
+	fieldsAppResStatusRemote = append(fieldsStatus, "remote")
+
 	applicationResourceDetailsTemplate = `%v
 
 NAME	TEMPLATE-KIND	TEMPLATE-NAME	CLUSTER	STATUS
@@ -35,7 +41,7 @@ func NewApplicationResource(u *unstructured.Unstructured) *ApplicationResource {
 }
 
 func (o *ApplicationResource) GetStatus() string {
-	return getNestedString(o.u.Object, "status", "state")
+	return getNestedString(o.u.Object, fieldsStatusState...)
 }
 
 func (o *ApplicationResource) GetAge() string {
@@ -55,12 +61,12 @@ func (o *ApplicationResource) GetDetails() string {
 	remoteStatus := o.getRemoteStatus()
 
 	d := fmt.Sprintf(applicationResourceDetailsTemplate, o.u.GetKind(),
-		o.u.GetName(), getNestedString(o.u.Object, "spec", "template", "kind"),
-		getNestedString(o.u.Object, "spec", "template", "metadata", "name"),
-		getNestedString(o.u.Object, "status", "clusterRef", "name"),
-		getNestedString(o.u.Object, "status", "state"), remoteStatus)
+		o.u.GetName(), getNestedString(o.u.Object, fieldsAppResTemplateKind...),
+		getNestedString(o.u.Object, fieldsAppResTemplateName...),
+		getNestedString(o.u.Object, fieldsStatusClusterRefName...),
+		getNestedString(o.u.Object, fieldsStatusState...), remoteStatus)
 
-	cs, f, err := unstructured.NestedSlice(o.u.Object, "status", "conditionedStatus", "conditions")
+	cs, f, err := unstructured.NestedSlice(o.u.Object, fieldsConditionedStatusConditions...)
 	if err != nil || !f {
 		// failed to get conditions
 		return d
@@ -68,17 +74,17 @@ func (o *ApplicationResource) GetDetails() string {
 	for _, c := range cs {
 		cMap := c.(map[string]interface{})
 		if cMap == nil {
-			d = d + "<error>"
+			d = d + "<error: condition status is not a map>"
 			continue
 		}
-		getNestedString(cMap, "type")
+		getNestedString(cMap, conditionKeyType)
 
 		d = d + fmt.Sprintf("%v\t%v\t%v\t%v\t%v\t\n",
-			getNestedString(cMap, "type"),
-			getNestedString(cMap, "status"),
-			getNestedString(cMap, "lastTransitionTime"),
-			getNestedString(cMap, "reason"),
-			getNestedString(cMap, "message"))
+			getNestedString(cMap, conditionKeyType),
+			getNestedString(cMap, conditionKeyStatus),
+			getNestedString(cMap, conditionKeyLastTransitionTime),
+			getNestedString(cMap, conditionKeyReason),
+			getNestedString(cMap, conditionKeyMessage))
 	}
 	return d
 }
@@ -88,14 +94,14 @@ func (o *ApplicationResource) GetRelated(filterByLabel func(metav1.GroupVersionK
 	obj := o.u
 
 	// Get resource reference
-	u, err := getObjRef(obj.Object, applicationClusterRefPath)
+	u, err := getObjRef(obj.Object, fieldsStatusClusterRef)
 	if err != nil {
 		return related, err
 	}
 
 	related = append(related, u)
 
-	secrets, f, err := unstructured.NestedSlice(obj.Object, "spec", "secrets")
+	secrets, f, err := unstructured.NestedSlice(obj.Object, fieldsAppResSecrets...)
 	if err != nil {
 		return related, err
 	}
@@ -120,7 +126,7 @@ func (o *ApplicationResource) GetRelated(filterByLabel func(metav1.GroupVersionK
 }
 
 func (o *ApplicationResource) getRemoteStatus() string {
-	rs, f, err := unstructured.NestedFieldNoCopy(o.u.Object, "status", "remote")
+	rs, f, err := unstructured.NestedFieldNoCopy(o.u.Object, fieldsAppResStatusRemote...)
 	if err != nil {
 		// failed to get conditions
 		return fmt.Sprintf("<error: %v>", err)

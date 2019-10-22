@@ -7,6 +7,10 @@ import (
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 )
 
+var (
+	fieldsNPCProvider = []string{"specTemplate", "providerRef"}
+)
+
 type NonPortableClass struct {
 	u *unstructured.Unstructured
 }
@@ -29,12 +33,12 @@ func (o *NonPortableClass) GetDetails() string {
 func (o *NonPortableClass) GetRelated(filterByLabel func(metav1.GroupVersionKind, string, string) ([]unstructured.Unstructured, error)) ([]*unstructured.Unstructured, error) {
 	related := make([]*unstructured.Unstructured, 0)
 	obj := o.u.Object
-	u, err := getObjRef(obj, providerRefPath)
+	u, err := getObjRef(obj, fieldsNPCProvider)
 	if err != nil {
 		return related, err
 	}
 
-	// TODO(hasan): Could we set full resource reference for providerRef?
+	// TODO(hasan): Hack to set apiVersion for Provider until full object reference is available.
 	if u.GetAPIVersion() == "" {
 		oApiVersion := o.u.GetAPIVersion()
 		s := strings.Split(oApiVersion, ".")

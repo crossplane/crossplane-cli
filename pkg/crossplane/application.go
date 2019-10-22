@@ -10,6 +10,11 @@ import (
 )
 
 var (
+	fieldsAppDesiredRes          = append(fieldsStatus, "desiredResources")
+	fieldsAppSubmittedRes        = append(fieldsStatus, "submittedResources")
+	fieldsAppResourceSelector    = append(fieldsSpec, "resourceSelector")
+	fieldsAppResourceMatchLabels = append(fieldsAppResourceSelector, "matchLabels")
+
 	applicationDetailsTemplate = `%v
 
 NAME	CLUSTER	STATUS	DESIRED	SUBMITTED
@@ -29,7 +34,7 @@ func NewApplication(u *unstructured.Unstructured) *Application {
 }
 
 func (o *Application) GetStatus() string {
-	return getNestedString(o.u.Object, "status", "state")
+	return getNestedString(o.u.Object, fieldsStatusState...)
 }
 
 func (o *Application) GetAge() string {
@@ -38,11 +43,11 @@ func (o *Application) GetAge() string {
 
 func (o *Application) GetDetails() string {
 	d := fmt.Sprintf(applicationDetailsTemplate, o.u.GetKind(),
-		o.u.GetName(), getNestedString(o.u.Object, append(applicationClusterRefPath, "name")...),
-		o.GetStatus(), getNestedInt64(o.u.Object, "status", "desiredResources"),
-		getNestedInt64(o.u.Object, "status", "submittedResources"))
+		o.u.GetName(), getNestedString(o.u.Object, fieldsStatusClusterRefName...),
+		o.GetStatus(), getNestedInt64(o.u.Object, fieldsAppDesiredRes...),
+		getNestedInt64(o.u.Object, fieldsAppSubmittedRes...))
 
-	cs, f, err := unstructured.NestedSlice(o.u.Object, "status", "conditionedStatus", "conditions")
+	cs, f, err := unstructured.NestedSlice(o.u.Object, fieldsConditionedStatusConditions...)
 	if err != nil || !f {
 		// failed to get conditions
 		return d
@@ -50,17 +55,17 @@ func (o *Application) GetDetails() string {
 	for _, c := range cs {
 		cMap := c.(map[string]interface{})
 		if cMap == nil {
-			d = d + "<error>"
+			d = d + "<error: condition status is not a map>"
 			continue
 		}
-		getNestedString(cMap, "type")
+		getNestedString(cMap, conditionKeyType)
 
 		d = d + fmt.Sprintf("%v\t%v\t%v\t%v\t%v\t\n",
-			getNestedString(cMap, "type"),
-			getNestedString(cMap, "status"),
-			getNestedString(cMap, "lastTransitionTime"),
-			getNestedString(cMap, "reason"),
-			getNestedString(cMap, "message"))
+			getNestedString(cMap, conditionKeyType),
+			getNestedString(cMap, conditionKeyStatus),
+			getNestedString(cMap, conditionKeyLastTransitionTime),
+			getNestedString(cMap, conditionKeyReason),
+			getNestedString(cMap, conditionKeyMessage))
 	}
 	return d
 }
@@ -70,7 +75,7 @@ func (o *Application) GetRelated(filterByLabel func(metav1.GroupVersionKind, str
 	obj := o.u.Object
 
 	// Get resource reference
-	u, err := getObjRef(obj, applicationClusterRefPath)
+	u, err := getObjRef(obj, fieldsStatusClusterRef)
 	if err != nil {
 		return related, err
 	}
@@ -83,7 +88,7 @@ func (o *Application) GetRelated(filterByLabel func(metav1.GroupVersionKind, str
 	for _, k := range resourceKinds {
 		uArr, err := filterByLabel(metav1.GroupVersionKind{
 			Kind: k,
-		}, o.u.GetNamespace(), getNestedLabelSelector(obj, "spec", "resourceSelector", "matchLabels"))
+		}, o.u.GetNamespace(), getNestedLabelSelector(obj, fieldsAppResourceMatchLabels...))
 		// Ignore NoMatchError since all resources/kinds may not be available on the API,
 		// e.g. ignore if AWS stack is not installed when working GCP only.
 		if err != nil && !meta.IsNoMatchError(err) {

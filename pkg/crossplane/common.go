@@ -13,13 +13,21 @@ import (
 )
 
 var (
-	applicationClusterRefPath = []string{"status", "clusterRef"}
-	resourceRefPath           = []string{"spec", "resourceRef"}
-	claimRefPath              = []string{"spec", "claimRef"}
-	classRefPath              = []string{"classRef"}
-	resourceClassRefPath      = []string{"spec", "classRef"}
-	resourceSecretRefPath     = []string{"spec", "writeConnectionSecretToRef"}
-	providerRefPath           = []string{"specTemplate", "providerRef"}
+	fieldsSpec                        = []string{"spec"}
+	fieldsStatus                      = []string{"status"}
+	fieldsStatusState                 = append(fieldsStatus, "state")
+	fieldsResourceClass               = append(fieldsSpec, "classRef")
+	fieldsWriteConnSecret             = append(fieldsSpec, "writeConnectionSecretToRef")
+	fieldsConditionedStatus           = append(fieldsStatus, "conditionedStatus")
+	fieldsConditionedStatusConditions = append(fieldsConditionedStatus, "conditions")
+	fieldsStatusClusterRef            = append(fieldsStatus, "clusterRef")
+	fieldsStatusClusterRefName        = append(fieldsStatusClusterRef, "name")
+
+	conditionKeyType               = "type"
+	conditionKeyStatus             = "status"
+	conditionKeyLastTransitionTime = "lastTransitionTime"
+	conditionKeyReason             = "reason"
+	conditionKeyMessage            = "message"
 
 	resourceDetailsTemplate = `%v: %v
 

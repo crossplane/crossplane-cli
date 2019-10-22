@@ -35,12 +35,12 @@ func (n *Node) GetId() string {
 	return GetNodeIdFor(n.gvr, n.instance)
 }
 
-func GetNodeIdFor(res schema.GroupVersionResource, i *unstructured.Unstructured) string {
-	return strings.ToLower(fmt.Sprintf("%s-%s-%s", res.String(), i.GetNamespace(), i.GetName()))
-}
-
 func (n *Node) IsFetched() bool {
 	return n.instance.GetUID() != ""
+}
+
+func GetNodeIdFor(res schema.GroupVersionResource, i *unstructured.Unstructured) string {
+	return strings.ToLower(fmt.Sprintf("%s-%s-%s", res.String(), i.GetNamespace(), i.GetName()))
 }
 
 type GraphBuilder interface {
