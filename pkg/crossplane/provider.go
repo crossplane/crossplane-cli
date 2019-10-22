@@ -33,10 +33,6 @@ func (o *Provider) GetObjectDetails() ObjectDetails {
 	return getObjectDetails(o.u)
 }
 
-func (o *Provider) GetDetails() string {
-	return ""
-}
-
 func (o *Provider) GetRelated(filterByLabel func(metav1.GroupVersionKind, string, string) ([]unstructured.Unstructured, error)) ([]*unstructured.Unstructured, error) {
 	related := make([]*unstructured.Unstructured, 0)
 	obj := o.u.Object

@@ -34,10 +34,6 @@ func (o *NonPortableClass) GetObjectDetails() ObjectDetails {
 	return getObjectDetails(o.u)
 }
 
-func (o *NonPortableClass) GetDetails() string {
-	return ""
-}
-
 func (o *NonPortableClass) GetRelated(filterByLabel func(metav1.GroupVersionKind, string, string) ([]unstructured.Unstructured, error)) ([]*unstructured.Unstructured, error) {
 	related := make([]*unstructured.Unstructured, 0)
 	obj := o.u.Object

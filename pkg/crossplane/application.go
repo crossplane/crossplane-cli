@@ -1,9 +1,6 @@
 package crossplane
 
 import (
-	"fmt"
-	"strconv"
-
 	"k8s.io/apimachinery/pkg/api/meta"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -15,15 +12,6 @@ var (
 	fieldsAppSubmittedRes        = append(fieldsStatus, "submittedResources")
 	fieldsAppResourceSelector    = append(fieldsSpec, "resourceSelector")
 	fieldsAppResourceMatchLabels = append(fieldsAppResourceSelector, "matchLabels")
-
-	applicationDetailsTemplate = `%v
-
-NAME	CLUSTER	STATUS	DESIRED	SUBMITTED
-%v	%v	%v	%v	%v	
-
-State Conditions
-TYPE	STATUS	LAST-TRANSITION-TIME	REASON	MESSAGE	
-`
 )
 
 type Application struct {
@@ -47,46 +35,7 @@ func (o *Application) GetObjectDetails() ObjectDetails {
 	if u == nil {
 		return ObjectDetails{}
 	}
-	od := getObjectDetails(o.u)
-
-	apcs := make([]map[string]string, 0)
-	apcs = append(apcs, getColumn("NAME", u.GetName()))
-	apcs = append(apcs, getColumn("CLUSTER", getNestedString(o.u.Object, fieldsStatusClusterRefName...)))
-	apcs = append(apcs, getColumn("STATUS", o.GetStatus()))
-	apcs = append(apcs, getColumn("DESIRED", strconv.Itoa(int(getNestedInt64(o.u.Object, fieldsAppDesiredRes...)))))
-	apcs = append(apcs, getColumn("SUBMITTED", strconv.Itoa(int(getNestedInt64(o.u.Object, fieldsAppSubmittedRes...)))))
-
-	od.AdditionalPrinterColumns = apcs
-
-	return od
-}
-
-func (o *Application) GetDetails() string {
-	d := fmt.Sprintf(applicationDetailsTemplate, o.u.GetKind(),
-		o.u.GetName(), getNestedString(o.u.Object, fieldsStatusClusterRefName...),
-		o.GetStatus(), getNestedInt64(o.u.Object, fieldsAppDesiredRes...),
-		getNestedInt64(o.u.Object, fieldsAppSubmittedRes...))
-
-	cs, f, err := unstructured.NestedSlice(o.u.Object, fieldsConditionedStatusConditions...)
-	if err != nil || !f {
-		// failed to get conditions
-		return d
-	}
-	for _, c := range cs {
-		cMap := c.(map[string]interface{})
-		if cMap == nil {
-			d = d + "<error: condition status is not a map>"
-			continue
-		}
-
-		d = d + fmt.Sprintf("%v\t%v\t%v\t%v\t%v\t\n",
-			getNestedString(cMap, conditionKeyType),
-			getNestedString(cMap, conditionKeyStatus),
-			getNestedString(cMap, conditionKeyLastTransitionTime),
-			getNestedString(cMap, conditionKeyReason),
-			getNestedString(cMap, conditionKeyMessage))
-	}
-	return d
+	return getObjectDetails(o.u)
 }
 
 func (o *Application) GetRelated(filterByLabel func(metav1.GroupVersionKind, string, string) ([]unstructured.Unstructured, error)) ([]*unstructured.Unstructured, error) {

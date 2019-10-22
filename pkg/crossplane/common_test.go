@@ -101,7 +101,7 @@ func Test_getObjectDetails(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			gotResult := getObjectDetails(tc.args.u)
 			if diff := cmp.Diff(tc.want.result, gotResult); diff != "" {
-				t.Errorf("GetObjectDetails(...): -want result, +got result: %s", diff)
+				t.Errorf("getObjectDetails(...): -want result, +got result: %s", diff)
 			}
 		})
 	}

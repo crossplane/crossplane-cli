@@ -1,6 +1,7 @@
 package crossplane
 
 import (
+	"github.com/google/go-cmp/cmp/cmpopts"
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
@@ -81,12 +82,10 @@ func TestApplicationResource_GetObjectDetails(t *testing.T) {
 					Kind:      "KubernetesApplicationResource",
 					Name:      "test",
 					Namespace: "unittest",
-					AdditionalPrinterColumns: []map[string]string{
-						getColumn("NAME", "test"),
+					AdditionalStatusColumns: []map[string]string{
+						getColumn("STATE", "Scheduled"),
 						getColumn("TEMPLATE-KIND", "Deployment"),
 						getColumn("TEMPLATE-NAME", "wordpress"),
-						getColumn("CLUSTER", "test-cluster"),
-						getColumn("STATUS", "Scheduled"),
 					},
 					Conditions: []map[string]string{
 						{
@@ -118,7 +117,8 @@ func TestApplicationResource_GetObjectDetails(t *testing.T) {
 				u: tc.args.u,
 			}
 			gotResult := o.GetObjectDetails()
-			if diff := cmp.Diff(tc.want.result, gotResult); diff != "" {
+			if diff := cmp.Diff(tc.want.result, gotResult,
+				cmp.Options{cmpopts.SortSlices(func(i, j map[string]string) bool { return i["name"] < j["name"] })}); diff != "" {
 				t.Errorf("GetObjectDetails(...): -want result, +got result: %s", diff)
 			}
 		})

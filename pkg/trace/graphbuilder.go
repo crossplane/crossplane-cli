@@ -135,10 +135,7 @@ func (g *KubeGraphBuilder) filterByLabel(gvk metav1.GroupVersionKind, namespace,
 func (g *KubeGraphBuilder) findRelated(n *Node) error {
 	n.related = make([]*Node, 0)
 
-	c, err := crossplane.ObjectFromUnstructured(n.instance)
-	if err != nil {
-		return err
-	}
+	c := crossplane.ObjectFromUnstructured(n.instance)
 	if c == nil {
 		// This is not a known crossplane object (e.g. secret) so no related obj.
 		return nil

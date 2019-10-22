@@ -82,7 +82,6 @@ var (
 type Object interface {
 	GetStatus() string
 	GetObjectDetails() ObjectDetails
-	GetDetails() string
 	GetAge() string
 	GetRelated(filterByLabel func(metav1.GroupVersionKind, string, string) ([]unstructured.Unstructured, error)) ([]*unstructured.Unstructured, error)
 }
@@ -97,28 +96,28 @@ type ObjectDetails struct {
 	// Details available only for a subset of objects
 	RemoteStatus string
 
-	// Each object provides own AdditionalPrinterColumns
-	AdditionalPrinterColumns []map[string]string
+	// Each object provides own AdditionalStatusColumns
+	AdditionalStatusColumns []map[string]string
 }
 
-func ObjectFromUnstructured(u *unstructured.Unstructured) (Object, error) {
+func ObjectFromUnstructured(u *unstructured.Unstructured) Object {
 	gvk := u.GroupVersionKind()
 	if isClaim(gvk) {
-		return NewClaim(u), nil
+		return NewClaim(u)
 	} else if isManaged(gvk) {
-		return NewManaged(u), nil
+		return NewManaged(u)
 	} else if isPortableClass(gvk) {
-		return NewPortableClass(u), nil
+		return NewPortableClass(u)
 	} else if isNonPortableClass(gvk) {
-		return NewNonPortableClass(u), nil
+		return NewNonPortableClass(u)
 	} else if isProvider(gvk) {
-		return NewProvider(u), nil
+		return NewProvider(u)
 	} else if isApplication(gvk) {
-		return NewApplication(u), nil
+		return NewApplication(u)
 	} else if isApplicationResource(gvk) {
-		return NewApplicationResource(u), nil
+		return NewApplicationResource(u)
 	}
-	return nil, nil
+	return nil
 }
 
 func isClaim(gvk schema.GroupVersionKind) bool {

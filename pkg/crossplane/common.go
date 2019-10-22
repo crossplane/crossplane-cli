@@ -3,6 +3,7 @@ package crossplane
 import (
 	"errors"
 	"fmt"
+	"strconv"
 	"strings"
 	"time"
 
@@ -20,6 +21,7 @@ var (
 	fieldsWriteConnSecret             = append(fieldsSpec, "writeConnectionSecretToRef")
 	fieldsConditionedStatus           = append(fieldsStatus, "conditionedStatus")
 	fieldsConditionedStatusConditions = append(fieldsConditionedStatus, "conditions")
+	fieldsStatusConditions            = append(fieldsStatus, "conditions")
 	fieldsStatusClusterRef            = append(fieldsStatus, "clusterRef")
 	fieldsStatusClusterRefName        = append(fieldsStatusClusterRef, "name")
 
@@ -31,13 +33,6 @@ var (
 
 	keyColumnName  = "name"
 	keyColumnValue = "value"
-
-	resourceDetailsTemplate = `%v: %v
-
-State: %v
-State Conditions
-TYPE	STATUS	LAST-TRANSITION-TIME	REASON	MESSAGE	
-`
 )
 
 func GetAge(u *unstructured.Unstructured) string {
@@ -51,31 +46,6 @@ func GetAge(u *unstructured.Unstructured) string {
 
 func getResourceStatus(u *unstructured.Unstructured) string {
 	return getNestedString(u.Object, "status", "bindingPhase")
-}
-
-func getResourceDetails(u *unstructured.Unstructured) string {
-	d := fmt.Sprintf(resourceDetailsTemplate, u.GetKind(), u.GetName(), getResourceStatus(u))
-	cs, f, err := unstructured.NestedSlice(u.Object, "status", "conditions")
-	if err != nil || !f {
-		// failed to get conditions
-		return d
-	}
-	for _, c := range cs {
-		cMap := c.(map[string]interface{})
-		if cMap == nil {
-			d = d + "<error>"
-			continue
-		}
-		getNestedString(cMap, "type")
-
-		d = d + fmt.Sprintf("%v\t%v\t%v\t%v\t%v\t\n",
-			getNestedString(cMap, "type"),
-			getNestedString(cMap, "status"),
-			getNestedString(cMap, "lastTransitionTime"),
-			getNestedString(cMap, "reason"),
-			getNestedString(cMap, "message"))
-	}
-	return d
 }
 
 func getObjRef(obj map[string]interface{}, path []string) (*unstructured.Unstructured, error) {
@@ -129,7 +99,7 @@ func getNestedString(obj map[string]interface{}, fields ...string) string {
 		return "<unknown>"
 	}
 	if !found {
-		return " "
+		return ""
 	}
 	return val
 }
@@ -191,7 +161,7 @@ func getObjectDetails(u *unstructured.Unstructured) ObjectDetails {
 	}
 
 	conditions := make([]map[string]string, 0)
-	cs, f, err := unstructured.NestedSlice(u.Object, fieldsConditionedStatusConditions...)
+	cs, f, err := unstructured.NestedSlice(u.Object, fieldsStatusConditions...)
 	if err == nil && f {
 		for _, c := range cs {
 			condition := make(map[string]string)
@@ -209,8 +179,52 @@ func getObjectDetails(u *unstructured.Unstructured) ObjectDetails {
 
 			conditions = append(conditions, condition)
 		}
+	}
+	csc, f, err := unstructured.NestedSlice(u.Object, fieldsConditionedStatusConditions...)
+	if err == nil && f {
+		for _, c := range csc {
+			condition := make(map[string]string)
+			cMap := c.(map[string]interface{})
+			if cMap == nil {
+				condition[conditionKeyMessage] = "<error: condition status is not a map>"
+				continue
+			}
+
+			condition[conditionKeyType] = getNestedString(cMap, conditionKeyType)
+			condition[conditionKeyStatus] = getNestedString(cMap, conditionKeyStatus)
+			condition[conditionKeyLastTransitionTime] = getNestedString(cMap, conditionKeyLastTransitionTime)
+			condition[conditionKeyReason] = getNestedString(cMap, conditionKeyReason)
+			condition[conditionKeyMessage] = getNestedString(cMap, conditionKeyMessage)
+
+			conditions = append(conditions, condition)
+		}
+	}
+	if len(conditions) > 0 {
 		od.Conditions = conditions
 	}
 
+	asc := make([]map[string]string, 0)
+	st, f, err := unstructured.NestedMap(u.Object, fieldsStatus...)
+	if err == nil && f {
+		for k, _ := range st {
+			val, f, err := unstructured.NestedString(st, k)
+			if err == nil && f {
+				info := make(map[string]string)
+				info["name"] = strings.ToUpper(k)
+				info["value"] = val
+				asc = append(asc, info)
+			}
+			ival, f, err := unstructured.NestedInt64(st, k)
+			if err == nil && f {
+				info := make(map[string]string)
+				info["name"] = strings.ToUpper(k)
+				info["value"] = strconv.Itoa(int(ival))
+				asc = append(asc, info)
+			}
+		}
+	}
+	if len(asc) > 0 {
+		od.AdditionalStatusColumns = asc
+	}
 	return od
 }

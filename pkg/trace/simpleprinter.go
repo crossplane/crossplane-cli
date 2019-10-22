@@ -1,13 +1,14 @@
 package trace
 
 import (
+	"bytes"
 	"fmt"
 	"os"
 	"strings"
 	"text/tabwriter"
+	"text/template"
 
 	"github.com/crossplaneio/crossplane-cli/pkg/crossplane"
-
 	"github.com/fatih/color"
 )
 
@@ -17,6 +18,33 @@ const (
 	tabwriterPadding  = 3
 	tabwriterPadChar  = ' '
 )
+
+var detailsTemplate = `{{- if or .AdditionalStatusColumns .RemoteStatus .Conditions }}
+{{.Kind}}: {{.Name}}
+
+{{ if .AdditionalStatusColumns -}}
+{{ range $i, $a := .AdditionalStatusColumns }}
+{{- $a.name | printf "%s	" -}}
+{{ end }}
+{{ range $i, $a := .AdditionalStatusColumns }}
+{{- $a.value | printf "%s	" -}}
+{{ end }}
+{{ end }}
+
+{{- if .Conditions }}
+Conditions
+TYPE	STATUS	LAST-TRANSITION-TIME	REASON	MESSAGE	
+{{ range $i, $c := .Conditions }}
+{{- $c.type }}	{{ $c.status }}	{{ $c.lastTransitionTime }}	{{ $c.reason }}	{{ $c.message }}	
+{{ end }}
+{{- end }}
+
+{{- if .RemoteStatus }}
+Remote Status
+{{ .RemoteStatus -}}
+{{- end }}
+{{ end -}}
+`
 
 type SimplePrinter struct {
 	tabWriter *tabwriter.Writer
@@ -32,7 +60,7 @@ func (p *SimplePrinter) Print(nodes []*Node) error {
 	if err != nil {
 		return err
 	}
-	err = p.printDetails(nodes)
+	err = p.printAllDetails(nodes)
 	if err != nil {
 		return err
 	}
@@ -52,10 +80,7 @@ func (p *SimplePrinter) printOverview(nodes []*Node) error {
 	}
 	for _, n := range nodes {
 		o := n.instance
-		c, err := crossplane.ObjectFromUnstructured(o)
-		if err != nil {
-			return err
-		}
+		c := crossplane.ObjectFromUnstructured(o)
 		if c == nil {
 			// This is not a known crossplane object (e.g. secret) so no related obj.
 			s := "N/A"
@@ -80,7 +105,7 @@ func (p *SimplePrinter) printOverview(nodes []*Node) error {
 	}
 	return nil
 }
-func (p *SimplePrinter) printDetails(nodes []*Node) error {
+func (p *SimplePrinter) printAllDetails(nodes []*Node) error {
 	titleF := color.New(color.Bold).Add(color.Underline)
 	_, err := titleF.Println("DETAILS")
 	if err != nil {
@@ -90,19 +115,9 @@ func (p *SimplePrinter) printDetails(nodes []*Node) error {
 
 	allDetails := ""
 	for _, n := range nodes {
-		o := n.instance
-		c, err := crossplane.ObjectFromUnstructured(o)
-		if err != nil {
-			return err
-		}
-		if c == nil {
-			continue
-		}
-		// TODO(hasan): How to print details should be responsibility of simple printer and not crossplane objects.
-		//  Needs refactoring accoringly.
-		d := c.GetDetails()
+		d := getDetailsText(n)
 		if d != "" {
-			d += "\n---\n\n"
+			d += "---\n"
 		}
 		allDetails += d
 	}
@@ -112,4 +127,27 @@ func (p *SimplePrinter) printDetails(nodes []*Node) error {
 		return err
 	}
 	return nil
+}
+
+func getDetailsText(node *Node) string {
+	if node == nil {
+		return "<error: node to trace is nil>"
+	}
+
+	o := node.instance
+	c := crossplane.ObjectFromUnstructured(o)
+	if c == nil {
+		return ""
+	}
+	d := c.GetObjectDetails()
+	tmpl, err := template.New("details").Parse(detailsTemplate)
+	if err != nil {
+		return fmt.Sprintf("<error: %v>", err)
+	}
+	dBuf := new(bytes.Buffer)
+	err = tmpl.Execute(dBuf, d)
+	if err != nil {
+		return fmt.Sprintf("<error: %v>", err)
+	}
+	return dBuf.String()
 }

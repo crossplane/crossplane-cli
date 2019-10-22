@@ -3,6 +3,8 @@ package crossplane
 import (
 	"testing"
 
+	"github.com/google/go-cmp/cmp/cmpopts"
+
 	"github.com/google/go-cmp/cmp"
 
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
@@ -66,12 +68,10 @@ func TestApplication_GetObjectDetails(t *testing.T) {
 					Kind:      "KubernetesApplication",
 					Name:      "test",
 					Namespace: "unittest",
-					AdditionalPrinterColumns: []map[string]string{
-						getColumn("NAME", "test"),
-						getColumn("CLUSTER", "test-cluster"),
-						getColumn("STATUS", "Submitted"),
-						getColumn("DESIRED", "3"),
-						getColumn("SUBMITTED", "2"),
+					AdditionalStatusColumns: []map[string]string{
+						getColumn("DESIREDRESOURCES", "3"),
+						getColumn("STATE", "Submitted"),
+						getColumn("SUBMITTEDRESOURCES", "2"),
 					},
 					Conditions: []map[string]string{
 						{
@@ -99,7 +99,8 @@ func TestApplication_GetObjectDetails(t *testing.T) {
 				u: tc.args.u,
 			}
 			gotResult := o.GetObjectDetails()
-			if diff := cmp.Diff(tc.want.result, gotResult); diff != "" {
+			if diff := cmp.Diff(tc.want.result, gotResult,
+				cmp.Options{cmpopts.SortSlices(func(i, j map[string]string) bool { return i["name"] < j["name"] })}); diff != "" {
 				t.Errorf("GetObjectDetails(...): -want result, +got result: %s", diff)
 			}
 		})
