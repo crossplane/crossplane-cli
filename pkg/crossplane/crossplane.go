@@ -79,6 +79,7 @@ var (
 	}
 )
 
+// Object is an interface for getting information of Crossplane objects.
 type Object interface {
 	GetStatus() string
 	GetObjectDetails() ObjectDetails
@@ -87,20 +88,22 @@ type Object interface {
 	IsReady() bool
 }
 
+// ObjectDetails struct contains detailed information of a Crossplane object.
 type ObjectDetails struct {
-	// Common details for all objects
+	// Common details for all objects.
 	Kind       string
 	Name       string
 	Namespace  string
 	Conditions []map[string]string
 
-	// Details available only for a subset of objects
+	// Details available only for a subset of objects.
 	RemoteStatus string
 
-	// Each object provides own AdditionalStatusColumns
+	// Each object provides own AdditionalStatusColumns from status field.
 	AdditionalStatusColumns []map[string]string
 }
 
+// ObjectFromUnstructured returns an Object is provided unstructured.Unstructured is a Crossplane object.
 func ObjectFromUnstructured(u *unstructured.Unstructured) Object {
 	gvk := u.GroupVersionKind()
 	if isClaim(gvk) {

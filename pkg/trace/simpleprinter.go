@@ -50,15 +50,18 @@ Remote Status
 {{ end -}}
 `
 
+// SimplePrinter is able to print tabbed overview and details.
 type SimplePrinter struct {
 	tabWriter *tabwriter.Writer
 }
 
+// NewSimplePrinter returns a SimplePrinter
 func NewSimplePrinter() *SimplePrinter {
 	t := tabwriter.NewWriter(os.Stdout, tabwriterMinWidth, tabwriterWidth, tabwriterPadding, tabwriterPadChar, 0)
 	return &SimplePrinter{tabWriter: t}
 }
 
+// Prints prints tabbed overview and details in order for a given array of nodes.
 func (p *SimplePrinter) Print(nodes []*Node) error {
 	err := p.printOverview(nodes)
 	if err != nil {

@@ -16,12 +16,14 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
+// KubeGraphBuilder enables building graphs between kubernetes objects with the relations defined by objects.
 type KubeGraphBuilder struct {
 	client     dynamic.Interface
 	restMapper meta.RESTMapper
 	nodes      map[string]*Node
 }
 
+// NewKubeGraphBuilder returns a KubeGraphBuilder ready for building graphs.
 func NewKubeGraphBuilder(client dynamic.Interface, restMapper meta.RESTMapper) *KubeGraphBuilder {
 	return &KubeGraphBuilder{
 		client:     client,
@@ -30,6 +32,8 @@ func NewKubeGraphBuilder(client dynamic.Interface, restMapper meta.RESTMapper) *
 	}
 }
 
+// BuildGraph builds a graphs for the object, whose name, namespace and groupRes provided as input.
+// This method returns the root node as well as the traversed array of nodes.
 func (g *KubeGraphBuilder) BuildGraph(name, namespace, groupRes string) (root *Node, traversed []*Node, err error) {
 	queue := list.New()
 

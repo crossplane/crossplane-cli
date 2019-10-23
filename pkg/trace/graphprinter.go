@@ -8,14 +8,17 @@ import (
 	"github.com/emicklei/dot"
 )
 
+// GraphPrinter is able to print graph definition in Graphviz dot format.
 type GraphPrinter struct {
 	writer io.Writer
 }
 
+// NewGraphPrinter returns a GraphPrinter
 func NewGraphPrinter() *GraphPrinter {
 	return &GraphPrinter{writer: os.Stdout}
 }
 
+// Print prints graph definition in Graphviz dot format for a given root node.
 func (p *GraphPrinter) Print(nodes []*Node) error {
 	g := dot.NewGraph(dot.Undirected)
 	for _, n := range nodes {
