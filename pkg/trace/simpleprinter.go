@@ -17,6 +17,10 @@ const (
 	tabwriterWidth    = 4
 	tabwriterPadding  = 3
 	tabwriterPadChar  = ' '
+
+	signStateReady    = "\u2714" // Heavy Check Mark
+	signStateNotReady = "!"
+	signStateMissing  = "\u2715" //	Multiplication X
 )
 
 var detailsTemplate = `{{- if or .AdditionalStatusColumns .RemoteStatus .Conditions }}
@@ -74,25 +78,30 @@ func (p *SimplePrinter) printOverview(nodes []*Node) error {
 	}
 	fmt.Fprintln(p.tabWriter, "")
 
-	_, err = fmt.Fprintln(p.tabWriter, "KIND\tNAME\tNAMESPACE\tSTATUS\tAGE\t")
+	_, err = fmt.Fprintln(p.tabWriter, "STATE\tKIND\tNAME\tNAMESPACE\tSTATUS\tAGE\t")
 	if err != nil {
 		return err
 	}
 	for _, n := range nodes {
 		o := n.instance
+		stateSign := signStateReady
+		status := "N/A"
+		if n.state == NodeStateMissing {
+			status = "<missing>"
+			stateSign = signStateMissing
+		} else if n.state == NodeStateNotReady {
+			stateSign = signStateNotReady
+		}
+
 		c := crossplane.ObjectFromUnstructured(o)
 		if c == nil {
 			// This is not a known crossplane object (e.g. secret) so no related obj.
-			s := "N/A"
-			if n.state == NodeStateMissing {
-				s = "<missing>"
-			}
-			_, err = fmt.Fprintf(p.tabWriter, "%v\t%v\t%v\t%v\t%v\t\n", o.GetKind(), o.GetName(), o.GetNamespace(), s, crossplane.GetAge(o))
+			_, err = fmt.Fprintf(p.tabWriter, "%v\t%v\t%v\t%v\t%v\t%v\t\n", stateSign, o.GetKind(), o.GetName(), o.GetNamespace(), status, crossplane.GetAge(o))
 			if err != nil {
 				return err
 			}
 		} else {
-			_, err = fmt.Fprintf(p.tabWriter, "%v\t%v\t%v\t%v\t%v\t\n", o.GetKind(), o.GetName(), o.GetNamespace(), c.GetStatus(), c.GetAge())
+			_, err = fmt.Fprintf(p.tabWriter, "%v\t%v\t%v\t%v\t%v\t%v\t\n", stateSign, o.GetKind(), o.GetName(), o.GetNamespace(), c.GetStatus(), c.GetAge())
 			if err != nil {
 				return err
 			}

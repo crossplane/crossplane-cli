@@ -59,6 +59,13 @@ func (g *KubeGraphBuilder) BuildGraph(name, namespace, groupRes string) (root *N
 		return root, nil, errors.New(
 			fmt.Sprintf("Object to trace is not found: \"%s\" \"%s\" in namespace \"%s\"", groupRes, name, namespace))
 	}
+	c := crossplane.ObjectFromUnstructured(root.instance)
+	if c == nil || c.IsReady() {
+		// This is not a known crossplane object (e.g. secret) or a ready crossplane object
+		root.state = NodeStateReady
+	} else {
+		root.state = NodeStateNotReady
+	}
 
 	// TODO(hasan): figure out if visited can be enough without traversed.
 	visited := map[string]bool{}
@@ -80,13 +87,21 @@ func (g *KubeGraphBuilder) BuildGraph(name, namespace, groupRes string) (root *N
 		}
 
 		for _, n := range node.related {
-			if n.state == NodeStateMissing {
-				continue
-			}
 			if !n.IsFetched() {
 				err := g.fetchObj(n)
-				if err != nil {
+				if kerrors.IsNotFound(err) {
+					n.state = NodeStateMissing
+				} else if err != nil {
 					return nil, nil, err
+				}
+			}
+			if n.state == NodeStateUnknown {
+				c := crossplane.ObjectFromUnstructured(n.instance)
+				if c == nil || c.IsReady() {
+					// This is not a known crossplane object (e.g. secret) or a ready crossplane object
+					n.state = NodeStateReady
+				} else {
+					n.state = NodeStateNotReady
 				}
 			}
 			nid := n.GetId()
@@ -109,10 +124,7 @@ func (g *KubeGraphBuilder) fetchObj(n *Node) error {
 	u := n.instance
 
 	u, err := g.client.Resource(gvr).Namespace(u.GetNamespace()).Get(u.GetName(), metav1.GetOptions{})
-	if kerrors.IsNotFound(err) {
-		n.state = NodeStateMissing
-		return nil
-	} else if err != nil {
+	if err != nil {
 		return err
 	}
 	n.instance = u

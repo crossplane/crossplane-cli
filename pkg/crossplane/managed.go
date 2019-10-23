@@ -32,6 +32,10 @@ func (o *Managed) GetObjectDetails() ObjectDetails {
 	return getObjectDetails(o.u)
 }
 
+func (o *Managed) IsReady() bool {
+	return o.GetStatus() == resourceBindingPhaseBound
+}
+
 func (o *Managed) GetRelated(filterByLabel func(metav1.GroupVersionKind, string, string) ([]unstructured.Unstructured, error)) ([]*unstructured.Unstructured, error) {
 	related := make([]*unstructured.Unstructured, 0)
 	obj := o.u.Object

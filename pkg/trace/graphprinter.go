@@ -23,12 +23,24 @@ func (p *GraphPrinter) Print(nodes []*Node) error {
 		for _, r := range relateds {
 			t := g.Node(r.GetId())
 			t.Label(getNodeLabel(r))
+			t.Attr("penwidth", "2")
 			if r.state == NodeStateMissing {
 				t.Attr("color", "red")
+				t.Attr("style", "dotted")
+			} else if r.state == NodeStateNotReady {
+				t.Attr("color", "orange")
 				t.Attr("style", "dashed")
 			}
 			f := g.Node(n.GetId())
 			f.Label(getNodeLabel(n))
+			f.Attr("penwidth", "2")
+			if n.state == NodeStateMissing {
+				f.Attr("color", "red")
+				f.Attr("style", "dotted")
+			} else if n.state == NodeStateNotReady {
+				f.Attr("color", "orange")
+				f.Attr("style", "dashed")
+			}
 			g.Edge(f, t)
 		}
 	}

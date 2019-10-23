@@ -18,6 +18,8 @@ var (
 	fieldsAppResTemplateKind = append(fieldsAppResTemplate, "kind")
 	fieldsAppResTemplateName = append(fieldsAppResTemplate, "metadata", "name")
 	fieldsAppResStatusRemote = append(fieldsStatus, "remote")
+
+	stateAppResSubmitted = "Submitted"
 )
 
 type ApplicationResource struct {
@@ -49,6 +51,10 @@ func (o *ApplicationResource) GetObjectDetails() ObjectDetails {
 	od.RemoteStatus = o.getRemoteStatus()
 
 	return od
+}
+
+func (o *ApplicationResource) IsReady() bool {
+	return o.GetStatus() == stateAppResSubmitted
 }
 
 func GetBytes(key interface{}) ([]byte, error) {

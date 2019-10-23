@@ -11,7 +11,10 @@ import (
 type NodeState string
 
 const (
-	NodeStateMissing NodeState = "Missing"
+	NodeStateUnknown  NodeState = ""
+	NodeStateMissing  NodeState = "Missing"
+	NodeStateReady    NodeState = "Ready"
+	NodeStateNotReady NodeState = "NotReady"
 )
 
 type Node struct {
@@ -36,7 +39,7 @@ func (n *Node) GetId() string {
 }
 
 func (n *Node) IsFetched() bool {
-	return n.instance.GetUID() != ""
+	return n.instance.GetUID() != "" || n.state != NodeStateUnknown
 }
 
 func GetNodeIdFor(res schema.GroupVersionResource, i *unstructured.Unstructured) string {

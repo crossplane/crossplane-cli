@@ -12,6 +12,8 @@ var (
 	fieldsAppSubmittedRes        = append(fieldsStatus, "submittedResources")
 	fieldsAppResourceSelector    = append(fieldsSpec, "resourceSelector")
 	fieldsAppResourceMatchLabels = append(fieldsAppResourceSelector, "matchLabels")
+
+	stateAppSubmitted = "Submitted"
 )
 
 type Application struct {
@@ -36,6 +38,10 @@ func (o *Application) GetObjectDetails() ObjectDetails {
 		return ObjectDetails{}
 	}
 	return getObjectDetails(o.u)
+}
+
+func (o *Application) IsReady() bool {
+	return o.GetStatus() == stateAppSubmitted
 }
 
 func (o *Application) GetRelated(filterByLabel func(metav1.GroupVersionKind, string, string) ([]unstructured.Unstructured, error)) ([]*unstructured.Unstructured, error) {

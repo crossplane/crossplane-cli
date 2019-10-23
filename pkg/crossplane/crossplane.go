@@ -84,6 +84,7 @@ type Object interface {
 	GetObjectDetails() ObjectDetails
 	GetAge() string
 	GetRelated(filterByLabel func(metav1.GroupVersionKind, string, string) ([]unstructured.Unstructured, error)) ([]*unstructured.Unstructured, error)
+	IsReady() bool
 }
 
 type ObjectDetails struct {

@@ -24,6 +24,7 @@ var (
 	fieldsStatusConditions            = append(fieldsStatus, "conditions")
 	fieldsStatusClusterRef            = append(fieldsStatus, "clusterRef")
 	fieldsStatusClusterRefName        = append(fieldsStatusClusterRef, "name")
+	fieldsStatusBindingPhase          = append(fieldsStatus, "bindingPhase")
 
 	conditionKeyType               = "type"
 	conditionKeyStatus             = "status"
@@ -33,6 +34,8 @@ var (
 
 	keyColumnName  = "name"
 	keyColumnValue = "value"
+
+	resourceBindingPhaseBound = "Bound"
 )
 
 func GetAge(u *unstructured.Unstructured) string {
@@ -45,7 +48,7 @@ func GetAge(u *unstructured.Unstructured) string {
 }
 
 func getResourceStatus(u *unstructured.Unstructured) string {
-	return getNestedString(u.Object, "status", "bindingPhase")
+	return getNestedString(u.Object, fieldsStatusBindingPhase...)
 }
 
 func getObjRef(obj map[string]interface{}, path []string) (*unstructured.Unstructured, error) {

@@ -24,6 +24,10 @@ func (o *PortableClass) GetStatus() string {
 	return "N/A"
 }
 
+func (o *PortableClass) IsReady() bool {
+	return true
+}
+
 func (o *PortableClass) GetObjectDetails() ObjectDetails {
 	if o.u == nil {
 		return ObjectDetails{}
