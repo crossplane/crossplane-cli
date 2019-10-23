@@ -18,6 +18,7 @@ var (
 	fieldsStatusState                 = append(fieldsStatus, "state")
 	fieldsResourceClass               = append(fieldsSpec, "classRef")
 	fieldsWriteConnSecret             = append(fieldsSpec, "writeConnectionSecretToRef")
+	fieldsWriteConnSecretToNS         = append(fieldsSpec, "writeConnectionSecretsToNamespace")
 	fieldsConditionedStatus           = append(fieldsStatus, "conditionedStatus")
 	fieldsConditionedStatusConditions = append(fieldsConditionedStatus, "conditions")
 	fieldsStatusConditions            = append(fieldsStatus, "conditions")

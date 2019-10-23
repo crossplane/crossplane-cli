@@ -66,9 +66,18 @@ func (o *Managed) GetRelated(filterByLabel func(metav1.GroupVersionKind, string,
 	if u != nil {
 		u.SetAPIVersion("v1")
 		u.SetKind("Secret")
-		u.SetNamespace(o.u.GetNamespace())
+		// For backward compatibility with namespaced managed resources, if namespaced, search secret in the
+		// same namespace as managed resource otherwise get namespace from spec.writeConnectionSecretsToNamespace
+		if o.u.GetNamespace() == "" {
+			u.SetNamespace(getNestedString(obj, fieldsWriteConnSecretToNS...))
+		} else {
+			u.SetNamespace(o.u.GetNamespace())
+		}
+
 		related = append(related, u)
 	}
+
+	// TODO(hasan): add provider as a reference here.
 
 	return related, nil
 }

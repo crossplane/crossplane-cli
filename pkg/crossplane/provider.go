@@ -47,7 +47,10 @@ func (o *Provider) GetRelated(filterByLabel func(metav1.GroupVersionKind, string
 		u.SetName(n)
 		u.SetAPIVersion("v1")
 		u.SetKind("Secret")
-		u.SetNamespace(o.u.GetNamespace())
+		// For backward compatibility, i.e. namespaced Providers didn't set namespace for the secret.
+		if u.GetNamespace() == "" {
+			u.SetNamespace(o.u.GetNamespace())
+		}
 		related = append(related, u)
 	}
 
