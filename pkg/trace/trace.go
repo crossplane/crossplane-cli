@@ -18,28 +18,27 @@ const (
 )
 
 type Node struct {
-	instance *unstructured.Unstructured
-	gvr      schema.GroupVersionResource
-	id       string
-	related  []*Node
-	state    NodeState
+	Instance *unstructured.Unstructured
+	GVR      schema.GroupVersionResource
+	Relateds []*Node
+	State    NodeState
 }
 
 func NewNode(res schema.GroupVersionResource, instance *unstructured.Unstructured) *Node {
 	return &Node{
-		gvr:      res,
-		instance: instance,
-		related:  nil,
-		state:    "",
+		GVR:      res,
+		Instance: instance,
+		Relateds: nil,
+		State:    "",
 	}
 }
 
 func (n *Node) GetId() string {
-	return GetNodeIdFor(n.gvr, n.instance)
+	return GetNodeIdFor(n.GVR, n.Instance)
 }
 
 func (n *Node) IsFetched() bool {
-	return n.instance.GetUID() != "" || n.state != NodeStateUnknown
+	return n.Instance.GetUID() != "" || n.State != NodeStateUnknown
 }
 
 func GetNodeIdFor(res schema.GroupVersionResource, i *unstructured.Unstructured) string {

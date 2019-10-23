@@ -45,38 +45,45 @@ func (o *Claim) GetRelated(filterByLabel func(metav1.GroupVersionKind, string, s
 	if err != nil {
 		return related, err
 	}
-
-	related = append(related, u)
+	if u != nil {
+		related = append(related, u)
+	}
 
 	// Get class reference
 	u, err = getObjRef(obj, fieldsResourceClass)
 	if err != nil {
 		return related, err
 	}
-	// TODO(hasan): Hack for claim -> portableClass, currently apiversion, kind and ns missing
-	//  hence we need to manually fill them. This limitation will be removed with
-	//  https://github.com/crossplaneio/crossplane/blob/master/design/one-pager-simple-class-selection.md
-	if u.GetAPIVersion() == "" {
-		u.SetAPIVersion(o.u.GetAPIVersion())
+	if u != nil {
+		// TODO(hasan): Hack for claim -> portableClass, currently apiversion, kind and ns missing
+		//  hence we need to manually fill them. This limitation will be removed with
+		//  https://github.com/crossplaneio/crossplane/blob/master/design/one-pager-simple-class-selection.md
+		if u.GetAPIVersion() == "" {
+			u.SetAPIVersion(o.u.GetAPIVersion())
+		}
+		if u.GetKind() == "" {
+			u.SetKind(o.u.GetKind() + "Class")
+		}
+		if u.GetNamespace() == "" {
+			u.SetNamespace(o.u.GetNamespace())
+		}
+		related = append(related, u)
 	}
-	if u.GetKind() == "" {
-		u.SetKind(o.u.GetKind() + "Class")
-	}
-	if u.GetNamespace() == "" {
-		u.SetNamespace(o.u.GetNamespace())
-	}
-
-	related = append(related, u)
 
 	// Get write to secret reference
 	u, err = getObjRef(obj, fieldsWriteConnSecret)
-	u.SetAPIVersion("v1")
-	u.SetKind("Secret")
-	u.SetNamespace(o.u.GetNamespace())
 	if err != nil {
 		return related, err
 	}
-	related = append(related, u)
+	if u != nil {
+		u.SetAPIVersion("v1")
+		u.SetKind("Secret")
+		u.SetNamespace(o.u.GetNamespace())
+		if err != nil {
+			return related, err
+		}
+		related = append(related, u)
+	}
 
 	return related, nil
 }

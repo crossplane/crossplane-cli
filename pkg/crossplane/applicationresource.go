@@ -76,8 +76,9 @@ func (o *ApplicationResource) GetRelated(filterByLabel func(metav1.GroupVersionK
 	if err != nil {
 		return related, err
 	}
-
-	related = append(related, u)
+	if u != nil {
+		related = append(related, u)
+	}
 
 	secrets, f, err := unstructured.NestedSlice(obj.Object, fieldsAppResSecrets...)
 	if err != nil {
@@ -93,10 +94,12 @@ func (o *ApplicationResource) GetRelated(filterByLabel func(metav1.GroupVersionK
 			if err != nil {
 				return related, err
 			}
-			u.SetAPIVersion("v1")
-			u.SetKind("Secret")
-			u.SetNamespace(obj.GetNamespace())
-			related = append(related, u)
+			if u != nil {
+				u.SetAPIVersion("v1")
+				u.SetKind("Secret")
+				u.SetNamespace(obj.GetNamespace())
+				related = append(related, u)
+			}
 		}
 	}
 

@@ -19,27 +19,25 @@ func NewGraphPrinter() *GraphPrinter {
 func (p *GraphPrinter) Print(nodes []*Node) error {
 	g := dot.NewGraph(dot.Undirected)
 	for _, n := range nodes {
-		relateds := n.related
+		relateds := n.Relateds
 		for _, r := range relateds {
 			t := g.Node(r.GetId())
 			t.Label(getNodeLabel(r))
 			t.Attr("penwidth", "2")
-			if r.state == NodeStateMissing {
+			if r.State == NodeStateMissing {
 				t.Attr("color", "red")
 				t.Attr("style", "dotted")
-			} else if r.state == NodeStateNotReady {
+			} else if r.State == NodeStateNotReady {
 				t.Attr("color", "orange")
-				t.Attr("style", "dashed")
 			}
 			f := g.Node(n.GetId())
 			f.Label(getNodeLabel(n))
 			f.Attr("penwidth", "2")
-			if n.state == NodeStateMissing {
+			if n.State == NodeStateMissing {
 				f.Attr("color", "red")
 				f.Attr("style", "dotted")
-			} else if n.state == NodeStateNotReady {
+			} else if n.State == NodeStateNotReady {
 				f.Attr("color", "orange")
-				f.Attr("style", "dashed")
 			}
 			g.Edge(f, t)
 		}
@@ -49,7 +47,7 @@ func (p *GraphPrinter) Print(nodes []*Node) error {
 }
 
 func getNodeLabel(n *Node) string {
-	u := n.instance
+	u := n.Instance
 	labelKind := u.GetKind()
 	labelName := u.GetName()
 	if len(labelName) > 24 {

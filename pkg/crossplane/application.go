@@ -53,8 +53,9 @@ func (o *Application) GetRelated(filterByLabel func(metav1.GroupVersionKind, str
 	if err != nil {
 		return related, err
 	}
-
-	related = append(related, u)
+	if u != nil {
+		related = append(related, u)
+	}
 
 	// Get related resources with resourceSelector
 	resourceKinds := getKindsFromGroupKinds(groupKindsClaim, groupKindsManaged, groupKindsApplicationResource)

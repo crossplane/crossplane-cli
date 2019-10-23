@@ -83,13 +83,13 @@ func (p *SimplePrinter) printOverview(nodes []*Node) error {
 		return err
 	}
 	for _, n := range nodes {
-		o := n.instance
+		o := n.Instance
 		stateSign := signStateReady
 		status := "N/A"
-		if n.state == NodeStateMissing {
+		if n.State == NodeStateMissing {
 			status = "<missing>"
 			stateSign = signStateMissing
-		} else if n.state == NodeStateNotReady {
+		} else if n.State == NodeStateNotReady {
 			stateSign = signStateNotReady
 		}
 
@@ -143,7 +143,7 @@ func getDetailsText(node *Node) string {
 		return "<error: node to trace is nil>"
 	}
 
-	o := node.instance
+	o := node.Instance
 	c := crossplane.ObjectFromUnstructured(o)
 	if c == nil {
 		return ""

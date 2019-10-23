@@ -55,16 +55,16 @@ func (g *KubeGraphBuilder) BuildGraph(name, namespace, groupRes string) (root *N
 	if err != nil {
 		return nil, nil, err
 	}
-	if root.state == NodeStateMissing {
+	if root.State == NodeStateMissing {
 		return root, nil, errors.New(
 			fmt.Sprintf("Object to trace is not found: \"%s\" \"%s\" in namespace \"%s\"", groupRes, name, namespace))
 	}
-	c := crossplane.ObjectFromUnstructured(root.instance)
+	c := crossplane.ObjectFromUnstructured(root.Instance)
 	if c == nil || c.IsReady() {
 		// This is not a known crossplane object (e.g. secret) or a ready crossplane object
-		root.state = NodeStateReady
+		root.State = NodeStateReady
 	} else {
-		root.state = NodeStateNotReady
+		root.State = NodeStateNotReady
 	}
 
 	// TODO(hasan): figure out if visited can be enough without traversed.
@@ -77,7 +77,7 @@ func (g *KubeGraphBuilder) BuildGraph(name, namespace, groupRes string) (root *N
 		qnode := queue.Front()
 		node := qnode.Value.(*Node)
 		// Skip if object is missing
-		if node.state == NodeStateMissing {
+		if node.State == NodeStateMissing {
 			queue.Remove(qnode)
 			continue
 		}
@@ -86,22 +86,22 @@ func (g *KubeGraphBuilder) BuildGraph(name, namespace, groupRes string) (root *N
 			return nil, nil, err
 		}
 
-		for _, n := range node.related {
+		for _, n := range node.Relateds {
 			if !n.IsFetched() {
 				err := g.fetchObj(n)
 				if kerrors.IsNotFound(err) {
-					n.state = NodeStateMissing
+					n.State = NodeStateMissing
 				} else if err != nil {
 					return nil, nil, err
 				}
 			}
-			if n.state == NodeStateUnknown {
-				c := crossplane.ObjectFromUnstructured(n.instance)
+			if n.State == NodeStateUnknown {
+				c := crossplane.ObjectFromUnstructured(n.Instance)
 				if c == nil || c.IsReady() {
 					// This is not a known crossplane object (e.g. secret) or a ready crossplane object
-					n.state = NodeStateReady
+					n.State = NodeStateReady
 				} else {
-					n.state = NodeStateNotReady
+					n.State = NodeStateNotReady
 				}
 			}
 			nid := n.GetId()
@@ -120,14 +120,14 @@ func (g *KubeGraphBuilder) fetchObj(n *Node) error {
 	if n.IsFetched() {
 		return nil
 	}
-	gvr := n.gvr
-	u := n.instance
+	gvr := n.GVR
+	u := n.Instance
 
 	u, err := g.client.Resource(gvr).Namespace(u.GetNamespace()).Get(u.GetName(), metav1.GetOptions{})
 	if err != nil {
 		return err
 	}
-	n.instance = u
+	n.Instance = u
 	return nil
 }
 
@@ -145,9 +145,9 @@ func (g *KubeGraphBuilder) filterByLabel(gvk metav1.GroupVersionKind, namespace,
 }
 
 func (g *KubeGraphBuilder) findRelated(n *Node) error {
-	n.related = make([]*Node, 0)
+	n.Relateds = make([]*Node, 0)
 
-	c := crossplane.ObjectFromUnstructured(n.instance)
+	c := crossplane.ObjectFromUnstructured(n.Instance)
 	if c == nil {
 		// This is not a known crossplane object (e.g. secret) so no related obj.
 		return nil
@@ -161,7 +161,7 @@ func (g *KubeGraphBuilder) findRelated(n *Node) error {
 		if err != nil {
 			return err
 		}
-		n.related = append(n.related, r)
+		n.Relateds = append(n.Relateds, r)
 	}
 	return nil
 }

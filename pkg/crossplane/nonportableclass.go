@@ -46,18 +46,20 @@ func (o *NonPortableClass) GetRelated(filterByLabel func(metav1.GroupVersionKind
 		return related, err
 	}
 
-	// TODO(hasan): Hack to set apiVersion for Provider until full object reference is available.
-	if u.GetAPIVersion() == "" {
-		oApiVersion := o.u.GetAPIVersion()
-		s := strings.Split(oApiVersion, ".")
-		a := strings.Join(s[1:], ".")
+	if u != nil {
+		// TODO(hasan): Hack to set apiVersion for Provider until full object reference is available.
+		if u.GetAPIVersion() == "" {
+			oApiVersion := o.u.GetAPIVersion()
+			s := strings.Split(oApiVersion, ".")
+			a := strings.Join(s[1:], ".")
 
-		u.SetAPIVersion(a)
+			u.SetAPIVersion(a)
+		}
+		if u.GetKind() == "" {
+			u.SetKind("Provider")
+		}
+		related = append(related, u)
 	}
-	if u.GetKind() == "" {
-		u.SetKind("Provider")
-	}
-	related = append(related, u)
 
 	return related, nil
 }

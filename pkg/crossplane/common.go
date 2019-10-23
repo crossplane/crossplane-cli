@@ -1,7 +1,6 @@
 package crossplane
 
 import (
-	"errors"
 	"fmt"
 	"strconv"
 	"strings"
@@ -70,7 +69,8 @@ func getObjRef(obj map[string]interface{}, path []string) (*unstructured.Unstruc
 	}
 
 	if !aFound && !kFound && !nFound && !nsFound {
-		return nil, errors.New("Failed to find a reference!")
+		// ignore if there is no referred object
+		return nil, nil
 	}
 
 	u := &unstructured.Unstructured{Object: map[string]interface{}{}}

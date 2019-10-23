@@ -45,24 +45,30 @@ func (o *Managed) GetRelated(filterByLabel func(metav1.GroupVersionKind, string,
 	if err != nil {
 		return related, err
 	}
-	related = append(related, u)
+	if u != nil {
+		related = append(related, u)
+	}
 
 	// Get class reference
 	u, err = getObjRef(obj, fieldsResourceClass)
 	if err != nil {
 		return related, err
 	}
-	related = append(related, u)
+	if u != nil {
+		related = append(related, u)
+	}
 
 	// Get write to secret reference
 	u, err = getObjRef(obj, fieldsWriteConnSecret)
 	if err != nil {
 		return related, err
 	}
-	u.SetAPIVersion("v1")
-	u.SetKind("Secret")
-	u.SetNamespace(o.u.GetNamespace())
-	related = append(related, u)
+	if u != nil {
+		u.SetAPIVersion("v1")
+		u.SetKind("Secret")
+		u.SetNamespace(o.u.GetNamespace())
+		related = append(related, u)
+	}
 
 	return related, nil
 }

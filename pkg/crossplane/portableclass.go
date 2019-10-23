@@ -44,7 +44,9 @@ func (o *PortableClass) GetRelated(filterByLabel func(metav1.GroupVersionKind, s
 	if err != nil {
 		return related, err
 	}
+	if u != nil {
+		related = append(related, u)
+	}
 
-	related = append(related, u)
 	return related, nil
 }

@@ -28,7 +28,7 @@ func TestSimplePrinter_getDetailsText(t *testing.T) {
 		},
 		"Simple": {
 			args: args{&Node{
-				instance: &unstructured.Unstructured{
+				Instance: &unstructured.Unstructured{
 					Object: map[string]interface{}{
 						"apiVersion": "workload.crossplane.io/v1alpha1",
 						"kind":       "KubernetesApplicationResource",
@@ -45,7 +45,7 @@ func TestSimplePrinter_getDetailsText(t *testing.T) {
 							},
 						},
 						"status": map[string]interface{}{
-							"state": "Scheduled",
+							"State": "Scheduled",
 							"clusterRef": map[string]interface{}{
 								"name": "test-cluster",
 							},
@@ -79,10 +79,9 @@ func TestSimplePrinter_getDetailsText(t *testing.T) {
 						},
 					},
 				},
-				gvr:     schema.GroupVersionResource{},
-				id:      "",
-				related: nil,
-				state:   "",
+				GVR:      schema.GroupVersionResource{},
+				Relateds: nil,
+				State:    "",
 			}},
 			want: want{
 				result: `
