@@ -20,6 +20,19 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
+var (
+	gvrK8S = schema.GroupVersionResource{
+		Group:    "compute.crossplane.io",
+		Version:  "v1alpha1",
+		Resource: "kubernetesclusters",
+	}
+	gvrGKE = schema.GroupVersionResource{
+		Group:    "compute.gcp.crossplane.io",
+		Version:  "v1alpha2",
+		Resource: "gkeclusters",
+	}
+)
+
 func TestKubeGraphBuilder_fetchObj(t *testing.T) {
 	scheme := runtime.NewScheme()
 
@@ -172,30 +185,30 @@ func TestKubeGraphBuilder_fetchObj(t *testing.T) {
 func TestKubeGraphBuilder_BuildGraph(t *testing.T) {
 	scheme := runtime.NewScheme()
 
-	gvrK8S := schema.GroupVersionResource{
-		Group:    "compute.crossplane.io",
-		Version:  "v1alpha1",
-		Resource: "kubernetesclusters",
-	}
-
 	computeGV := schema.GroupVersion{
 		Group:   "compute.crossplane.io",
 		Version: "v1alpha1",
+	}
+
+	gcpGV := schema.GroupVersion{
+		Group:   "compute.gcp.crossplane.io",
+		Version: "v1alpha2",
 	}
 
 	rm := meta.NewDefaultRESTMapper([]schema.GroupVersion{
 		computeGV,
 	})
 	rm.Add(computeGV.WithKind("kubernetescluster"), meta.RESTScopeNamespace)
+	rm.Add(gcpGV.WithKind("gkecluster"), meta.RESTScopeNamespace)
 
 	type args struct {
-		client           dynamic.Interface
-		restMapper       meta.RESTMapper
-		instanceToCreate *unstructured.Unstructured
-		name             string
-		namespace        string
-		resource         string
-		gvr              schema.GroupVersionResource
+		client            dynamic.Interface
+		restMapper        meta.RESTMapper
+		gvrs              []schema.GroupVersionResource
+		instancesToCreate []*unstructured.Unstructured
+		name              string
+		namespace         string
+		resource          string
 	}
 	type want struct {
 		traversed []*Node
@@ -207,35 +220,70 @@ func TestKubeGraphBuilder_BuildGraph(t *testing.T) {
 	}{
 		"NotExist": {
 			args: args{
-				client:           fake.NewSimpleDynamicClient(scheme),
-				restMapper:       rm,
-				instanceToCreate: nil,
-				name:             "test",
-				namespace:        "testnamespace",
-				resource:         "kubernetescluster",
+				client:            fake.NewSimpleDynamicClient(scheme),
+				restMapper:        rm,
+				instancesToCreate: nil,
+				name:              "test",
+				namespace:         "testnamespace",
+				resource:          "kubernetescluster",
 			},
 			want: want{
 				err: errors.NewNotFound(schema.ParseGroupResource("kubernetesclusters.compute.crossplane.io"), "test"),
 			},
 		},
-		"ExistsNamespaced": {
+		"ExistsNoRef": {
 			args: args{
-				client:           fake.NewSimpleDynamicClient(scheme),
-				restMapper:       rm,
-				instanceToCreate: getTestInstanceK8SCluster(),
-				name:             "test",
-				namespace:        "testnamespace",
-				resource:         "KubernetesCluster",
-				gvr:              gvrK8S,
+				client:            fake.NewSimpleDynamicClient(scheme),
+				restMapper:        rm,
+				instancesToCreate: []*unstructured.Unstructured{getTestInstanceK8SClusterNoRef()},
+				name:              "test",
+				namespace:         "testnamespace",
+				resource:          "KubernetesCluster",
+				gvrs:              []schema.GroupVersionResource{gvrK8S},
 			},
 			want: want{
 				err: nil,
 				traversed: []*Node{
 					{
-						Instance: getTestInstanceK8SCluster(),
+						Instance: getTestInstanceK8SClusterNoRef(),
 						GVR:      gvrK8S,
 						Relateds: []*Node{},
 						State:    NodeStateNotReady,
+					},
+				},
+			},
+		},
+		"ExistsOneRef": {
+			args: args{
+				client:            fake.NewSimpleDynamicClient(scheme),
+				restMapper:        rm,
+				instancesToCreate: []*unstructured.Unstructured{getTestInstanceK8SClusterWithRef(), getTestInstanceGKEClusterNoRef()},
+				name:              "test",
+				namespace:         "testnamespace",
+				resource:          "KubernetesCluster",
+				gvrs:              []schema.GroupVersionResource{gvrK8S, gvrGKE},
+			},
+			want: want{
+				err: nil,
+				traversed: []*Node{
+					{
+						Instance: getTestInstanceK8SClusterWithRef(),
+						GVR:      gvrK8S,
+						Relateds: []*Node{
+							{
+								Instance: getTestInstanceGKEClusterNoRef(),
+								GVR:      gvrGKE,
+								Relateds: []*Node{},
+								State:    NodeStateReady,
+							},
+						},
+						State: NodeStateNotReady,
+					},
+					{
+						Instance: getTestInstanceGKEClusterNoRef(),
+						GVR:      gvrGKE,
+						Relateds: []*Node{},
+						State:    NodeStateReady,
 					},
 				},
 			},
@@ -246,13 +294,13 @@ func TestKubeGraphBuilder_BuildGraph(t *testing.T) {
 			fc := tc.client
 			g := NewKubeGraphBuilder(fc, tc.restMapper)
 
-			i := tc.instanceToCreate
-			if i != nil {
-				_, err := fc.Resource(tc.gvr).Namespace(i.GetNamespace()).Create(i, metav1.CreateOptions{})
+			for i, inst := range tc.instancesToCreate {
+				_, err := fc.Resource(tc.gvrs[i]).Namespace(inst.GetNamespace()).Create(inst, metav1.CreateOptions{})
 				if err != nil {
 					t.Fatalf("failed to prepare test environment, could not create Instance: %v", err)
 				}
 			}
+
 			_, trvs, gotErr := g.BuildGraph(tc.name, tc.namespace, tc.resource)
 			if diff := cmp.Diff(tc.want.err, gotErr, test.EquateErrors()); diff != "" {
 				t.Fatalf("g.BuildGraph(...): -want error, +got error: %s", diff)
@@ -268,7 +316,31 @@ func TestKubeGraphBuilder_BuildGraph(t *testing.T) {
 	}
 }
 
-func getTestInstanceK8SCluster() *unstructured.Unstructured {
+func getTestInstanceGKEClusterNoRef() *unstructured.Unstructured {
+	i := getTestInstance()
+	i.SetAPIVersion("compute.gcp.crossplane.io/v1alpha2")
+	i.SetKind("GKECluster")
+	i.SetName("test-gke")
+	i.SetNamespace("testnamespace-gcp")
+	i.Object["status"] = map[string]interface{}{
+		"bindingPhase": "Bound",
+	}
+	return i
+}
+
+func getTestInstanceK8SClusterWithRef() *unstructured.Unstructured {
+	i := getTestInstanceK8SClusterNoRef()
+	spec, _ := i.Object["spec"].(map[string]interface{})
+	spec["resourceRef"] = map[string]interface{}{
+		"apiVersion": "compute.gcp.crossplane.io/v1alpha2",
+		"kind":       "GKECluster",
+		"name":       "test-gke",
+		"namespace":  "testnamespace-gcp",
+	}
+	return i
+}
+
+func getTestInstanceK8SClusterNoRef() *unstructured.Unstructured {
 	i := getTestInstance()
 	i.SetAPIVersion("compute.crossplane.io/v1alpha1")
 	i.SetKind("KubernetesCluster")
