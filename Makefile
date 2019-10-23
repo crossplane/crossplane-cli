@@ -4,8 +4,16 @@ default:
 	@echo Please specify a target to run!
 .PHONY: default
 
+build:
+	GO111MODULE=on go build -o bin/kubectl-crossplane-trace cmd/trace/main.go
+.PHONY: build
+
+clean:
+	rm bin/kubectl-crossplane-trace
+.PHONY: clean
+
 install:
-	ln -si $(abspath bin/kubectl-crossplane-stack-*) $(INSTALL_DIR)/
+	ln -si $(abspath bin/kubectl-crossplane-*) $(INSTALL_DIR)/
 .PHONY: install
 
 uninstall:
