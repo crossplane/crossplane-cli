@@ -20,17 +20,17 @@ import (
 	_ "k8s.io/client-go/plugin/pkg/client/auth"
 )
 
+var (
+	envKubeconfig = "KUBECONFIG"
+)
+
 func main() {
 	var help bool
 	var kubeconfig string
 	var namespace string
 	var outputFormat string
-	if home := homedir.HomeDir(); home != "" {
-		pflag.StringVar(&kubeconfig, "kubeconfig", filepath.Join(home, ".kube", "config"), "(optional) Absolute path to the kubeconfig file")
-	} else {
-		pflag.StringVar(&kubeconfig, "kubeconfig", "", "Absolute path to the kubeconfig file")
-	}
 
+	pflag.StringVar(&kubeconfig, "kubeconfig", "", "Absolute path to the kubeconfig file")
 	pflag.BoolVarP(&help, "help", "h", false, "Shows this help message")
 	pflag.StringVarP(&namespace, "namespace", "n", "default", "Namespace")
 	pflag.StringVarP(&outputFormat, "outputFormat", "o", "", "Output format. One of: dot")
@@ -39,6 +39,13 @@ func main() {
 	if help {
 		printHelp()
 		os.Exit(0)
+	}
+
+	if kubeconfig == "" {
+		kubeconfig = os.Getenv("KUBECONFIG")
+	}
+	if kubeconfig == "" {
+		kubeconfig = filepath.Join(homedir.HomeDir(), ".kube", "config")
 	}
 
 	resource := pflag.Arg(0)
