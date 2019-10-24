@@ -8,6 +8,10 @@ build:
 	GO111MODULE=on go build -o bin/kubectl-crossplane-trace cmd/trace/main.go
 .PHONY: build
 
+test:
+	GO111MODULE=on go test ./...
+.PHONY: test
+
 clean:
 	rm bin/kubectl-crossplane-trace
 .PHONY: clean
