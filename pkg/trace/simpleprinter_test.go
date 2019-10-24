@@ -87,8 +87,9 @@ func TestSimplePrinter_getDetailsText(t *testing.T) {
 				result: `
 KubernetesApplicationResource: test
 
-STATE	TEMPLATE-KIND	TEMPLATE-NAME	
-Scheduled	Deployment	wordpress	
+STATE: Scheduled
+TEMPLATE-KIND: Deployment
+TEMPLATE-NAME: wordpress
 
 Conditions
 TYPE	STATUS	LAST-TRANSITION-TIME	REASON	MESSAGE	

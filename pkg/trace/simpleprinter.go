@@ -28,12 +28,9 @@ var detailsTemplate = `{{- if or .AdditionalStatusColumns .RemoteStatus .Conditi
 
 {{ if .AdditionalStatusColumns -}}
 {{ range $i, $a := .AdditionalStatusColumns }}
-{{- $a.name | printf "%s	" -}}
+{{- $a.name }}: {{ $a.value }}
 {{ end }}
-{{ range $i, $a := .AdditionalStatusColumns }}
-{{- $a.value | printf "%s	" -}}
-{{ end }}
-{{ end }}
+{{- end }}
 
 {{- if .Conditions }}
 Conditions
