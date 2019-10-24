@@ -58,7 +58,7 @@ func (g *KubeGraphBuilder) BuildGraph(name, namespace, groupRes string) (root *N
 	err = g.fetchObj(root)
 	if kerrors.IsNotFound(err) {
 		return root, nil, errors.New(
-			fmt.Sprintf("Object to trace is not found: \"%s\" \"%s\" in namespace \"%s\"", groupRes, name, namespace))
+			fmt.Sprintf("Object to trace not found: \"%s\" \"%s\" in namespace \"%s\"", groupRes, name, namespace))
 	}
 	if err != nil {
 		return nil, nil, err

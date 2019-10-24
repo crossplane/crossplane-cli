@@ -1,11 +1,13 @@
 package trace
 
 import (
+	"errors"
+	"fmt"
 	"testing"
 
 	"k8s.io/apimachinery/pkg/api/meta"
 
-	"k8s.io/apimachinery/pkg/api/errors"
+	kerrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/client-go/dynamic/fake"
 
@@ -71,7 +73,7 @@ func TestKubeGraphBuilder_fetchObj(t *testing.T) {
 				},
 			},
 			want: want{
-				err: errors.NewNotFound(schema.ParseGroupResource("kubernetescluster.compute.crossplane.io"), "test"),
+				err: kerrors.NewNotFound(schema.ParseGroupResource("kubernetescluster.compute.crossplane.io"), "test"),
 			},
 		},
 		"ExistsNamespaced": {
@@ -228,7 +230,8 @@ func TestKubeGraphBuilder_BuildGraph(t *testing.T) {
 				resource:          "kubernetescluster",
 			},
 			want: want{
-				err: errors.NewNotFound(schema.ParseGroupResource("kubernetesclusters.compute.crossplane.io"), "test"),
+				err: errors.New(fmt.Sprintf("Object to trace not found: \"%s\" \"%s\" in namespace \"%s\"",
+					"kubernetescluster", "test", "testnamespace")),
 			},
 		},
 		"ExistsNoRef": {
