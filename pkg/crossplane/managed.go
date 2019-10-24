@@ -68,9 +68,7 @@ func (o *Managed) GetRelated(filterByLabel func(metav1.GroupVersionKind, string,
 		u.SetKind("Secret")
 		// For backward compatibility with namespaced managed resources, if namespaced, search secret in the
 		// same namespace as managed resource otherwise get namespace from spec.writeConnectionSecretsToNamespace
-		if o.instance.GetNamespace() == "" {
-			u.SetNamespace(getNestedString(obj, fieldsWriteConnSecretToNS...))
-		} else {
+		if u.GetNamespace() == "" {
 			u.SetNamespace(o.instance.GetNamespace())
 		}
 

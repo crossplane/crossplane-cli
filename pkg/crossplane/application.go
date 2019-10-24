@@ -58,9 +58,9 @@ func (o *Application) GetRelated(filterByLabel func(metav1.GroupVersionKind, str
 	}
 
 	// Get related resources with resourceSelector
-	resourceKinds := getKindsFromGroupKinds(groupKindsClaim, groupKindsManaged, groupKindsApplicationResource)
+	namespacedResourceKinds := getKindsFromGroupKinds(groupKindsClaim, groupKindsApplicationResource)
 
-	for _, k := range resourceKinds {
+	for _, k := range namespacedResourceKinds {
 		uArr, err := filterByLabel(metav1.GroupVersionKind{
 			Kind: k,
 		}, o.instance.GetNamespace(), getNestedLabelSelector(obj, fieldsAppResourceMatchLabels...))

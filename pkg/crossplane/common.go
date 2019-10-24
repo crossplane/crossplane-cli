@@ -18,7 +18,6 @@ var (
 	fieldsStatusState                 = append(fieldsStatus, "state")
 	fieldsResourceClass               = append(fieldsSpec, "classRef")
 	fieldsWriteConnSecret             = append(fieldsSpec, "writeConnectionSecretToRef")
-	fieldsWriteConnSecretToNS         = append(fieldsSpec, "writeConnectionSecretsToNamespace")
 	fieldsConditionedStatus           = append(fieldsStatus, "conditionedStatus")
 	fieldsConditionedStatusConditions = append(fieldsConditionedStatus, "conditions")
 	fieldsStatusConditions            = append(fieldsStatus, "conditions")
@@ -48,7 +47,11 @@ func GetAge(u *unstructured.Unstructured) string {
 }
 
 func getResourceStatus(u *unstructured.Unstructured) string {
-	return getNestedString(u.Object, fieldsStatusBindingPhase...)
+	status := getNestedString(u.Object, fieldsStatusBindingPhase...)
+	if status == "" {
+		status = getNestedString(u.Object, fieldsStatusState...)
+	}
+	return status
 }
 
 func getObjRef(obj map[string]interface{}, path []string) (*unstructured.Unstructured, error) {

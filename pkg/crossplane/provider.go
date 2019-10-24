@@ -6,8 +6,9 @@ import (
 )
 
 var (
-	fieldsProviderCredSecretRef     = append(fieldsSpec, "credentialsSecretRef")
-	fieldsProviderCredSecretRefName = append(fieldsProviderCredSecretRef, "name")
+	fieldsProviderCredSecretRef          = append(fieldsSpec, "credentialsSecretRef")
+	fieldsProviderCredSecretRefName      = append(fieldsProviderCredSecretRef, "name")
+	fieldsProviderCredSecretRefNamespace = append(fieldsProviderCredSecretRef, "namespace")
 )
 
 type Provider struct {
@@ -43,12 +44,15 @@ func (o *Provider) GetRelated(filterByLabel func(metav1.GroupVersionKind, string
 
 	u := &unstructured.Unstructured{}
 	n := getNestedString(obj, fieldsProviderCredSecretRefName...)
+	ns := getNestedString(obj, fieldsProviderCredSecretRefNamespace...)
 	if n != "" {
 		u.SetName(n)
 		u.SetAPIVersion("v1")
 		u.SetKind("Secret")
 		// For backward compatibility, i.e. namespaced Providers didn't set namespace for the secret.
-		if u.GetNamespace() == "" {
+		if ns != "" {
+			u.SetNamespace(ns)
+		} else {
 			u.SetNamespace(o.instance.GetNamespace())
 		}
 		related = append(related, u)

@@ -104,7 +104,8 @@ func (p *SimplePrinter) printOverview(nodes []*Node) error {
 				return err
 			}
 		} else {
-			_, err = fmt.Fprintf(p.tabWriter, "%v\t%v\t%v\t%v\t%v\t%v\t\n", stateSign, o.GetKind(), o.GetName(), o.GetNamespace(), c.GetStatus(), c.GetAge())
+			status := strings.ToUpper(c.GetStatus())
+			_, err = fmt.Fprintf(p.tabWriter, "%v\t%v\t%v\t%v\t%v\t%v\t\n", stateSign, o.GetKind(), o.GetName(), o.GetNamespace(), status, c.GetAge())
 			if err != nil {
 				return err
 			}
