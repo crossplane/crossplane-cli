@@ -56,12 +56,12 @@ func (g *KubeGraphBuilder) BuildGraph(name, namespace, groupRes string) (root *N
 	}
 
 	err = g.fetchObj(root)
-	if err != nil {
-		return nil, nil, err
-	}
-	if root.State == NodeStateMissing {
+	if kerrors.IsNotFound(err) {
 		return root, nil, errors.New(
 			fmt.Sprintf("Object to trace is not found: \"%s\" \"%s\" in namespace \"%s\"", groupRes, name, namespace))
+	}
+	if err != nil {
+		return nil, nil, err
 	}
 	c := crossplane.ObjectFromUnstructured(root.Instance)
 	if c == nil || c.IsReady() {
