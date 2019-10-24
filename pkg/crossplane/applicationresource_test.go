@@ -1,8 +1,9 @@
 package crossplane
 
 import (
-	"github.com/google/go-cmp/cmp/cmpopts"
 	"testing"
+
+	"github.com/google/go-cmp/cmp/cmpopts"
 
 	"github.com/google/go-cmp/cmp"
 
@@ -114,7 +115,7 @@ func TestApplicationResource_GetObjectDetails(t *testing.T) {
 	for name, tc := range cases {
 		t.Run(name, func(t *testing.T) {
 			o := &ApplicationResource{
-				u: tc.args.u,
+				instance: tc.args.u,
 			}
 			gotResult := o.GetObjectDetails()
 			if diff := cmp.Diff(tc.want.result, gotResult,

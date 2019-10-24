@@ -11,11 +11,11 @@ var (
 )
 
 type Provider struct {
-	u *unstructured.Unstructured
+	instance *unstructured.Unstructured
 }
 
 func NewProvider(u *unstructured.Unstructured) *Provider {
-	return &Provider{u: u}
+	return &Provider{instance: u}
 }
 
 func (o *Provider) GetStatus() string {
@@ -23,14 +23,14 @@ func (o *Provider) GetStatus() string {
 }
 
 func (o *Provider) GetAge() string {
-	return GetAge(o.u)
+	return GetAge(o.instance)
 }
 
 func (o *Provider) GetObjectDetails() ObjectDetails {
-	if o.u == nil {
+	if o.instance == nil {
 		return ObjectDetails{}
 	}
-	return getObjectDetails(o.u)
+	return getObjectDetails(o.instance)
 }
 
 func (o *Provider) IsReady() bool {
@@ -39,7 +39,7 @@ func (o *Provider) IsReady() bool {
 
 func (o *Provider) GetRelated(filterByLabel func(metav1.GroupVersionKind, string, string) ([]unstructured.Unstructured, error)) ([]*unstructured.Unstructured, error) {
 	related := make([]*unstructured.Unstructured, 0)
-	obj := o.u.Object
+	obj := o.instance.Object
 
 	u := &unstructured.Unstructured{}
 	n := getNestedString(obj, fieldsProviderCredSecretRefName...)
@@ -49,7 +49,7 @@ func (o *Provider) GetRelated(filterByLabel func(metav1.GroupVersionKind, string
 		u.SetKind("Secret")
 		// For backward compatibility, i.e. namespaced Providers didn't set namespace for the secret.
 		if u.GetNamespace() == "" {
-			u.SetNamespace(o.u.GetNamespace())
+			u.SetNamespace(o.instance.GetNamespace())
 		}
 		related = append(related, u)
 	}

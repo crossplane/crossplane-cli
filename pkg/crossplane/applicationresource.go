@@ -23,30 +23,30 @@ var (
 )
 
 type ApplicationResource struct {
-	u *unstructured.Unstructured
+	instance *unstructured.Unstructured
 }
 
 func NewApplicationResource(u *unstructured.Unstructured) *ApplicationResource {
-	return &ApplicationResource{u: u}
+	return &ApplicationResource{instance: u}
 }
 
 func (o *ApplicationResource) GetStatus() string {
-	return getNestedString(o.u.Object, fieldsStatusState...)
+	return getNestedString(o.instance.Object, fieldsStatusState...)
 }
 
 func (o *ApplicationResource) GetAge() string {
-	return GetAge(o.u)
+	return GetAge(o.instance)
 }
 
 func (o *ApplicationResource) GetObjectDetails() ObjectDetails {
-	u := o.u
+	u := o.instance
 	if u == nil {
 		return ObjectDetails{}
 	}
-	od := getObjectDetails(o.u)
+	od := getObjectDetails(o.instance)
 
-	od.AdditionalStatusColumns = append(od.AdditionalStatusColumns, getColumn("TEMPLATE-KIND", getNestedString(o.u.Object, fieldsAppResTemplateKind...)))
-	od.AdditionalStatusColumns = append(od.AdditionalStatusColumns, getColumn("TEMPLATE-NAME", getNestedString(o.u.Object, fieldsAppResTemplateName...)))
+	od.AdditionalStatusColumns = append(od.AdditionalStatusColumns, getColumn("TEMPLATE-KIND", getNestedString(o.instance.Object, fieldsAppResTemplateKind...)))
+	od.AdditionalStatusColumns = append(od.AdditionalStatusColumns, getColumn("TEMPLATE-NAME", getNestedString(o.instance.Object, fieldsAppResTemplateName...)))
 
 	od.RemoteStatus = o.getRemoteStatus()
 
@@ -69,7 +69,7 @@ func GetBytes(key interface{}) ([]byte, error) {
 
 func (o *ApplicationResource) GetRelated(filterByLabel func(metav1.GroupVersionKind, string, string) ([]unstructured.Unstructured, error)) ([]*unstructured.Unstructured, error) {
 	related := make([]*unstructured.Unstructured, 0)
-	obj := o.u
+	obj := o.instance
 
 	// Get resource reference
 	u, err := getObjRef(obj.Object, fieldsStatusClusterRef)
@@ -107,7 +107,7 @@ func (o *ApplicationResource) GetRelated(filterByLabel func(metav1.GroupVersionK
 }
 
 func (o *ApplicationResource) getRemoteStatus() string {
-	rs, f, err := unstructured.NestedFieldNoCopy(o.u.Object, fieldsAppResStatusRemote...)
+	rs, f, err := unstructured.NestedFieldNoCopy(o.instance.Object, fieldsAppResStatusRemote...)
 	if err != nil {
 		// failed to get conditions
 		return fmt.Sprintf("<error: %v>", err)

@@ -10,26 +10,26 @@ var (
 )
 
 type Claim struct {
-	u *unstructured.Unstructured
+	instance *unstructured.Unstructured
 }
 
 func NewClaim(u *unstructured.Unstructured) *Claim {
-	return &Claim{u: u}
+	return &Claim{instance: u}
 }
 
 func (o *Claim) GetStatus() string {
-	return getResourceStatus(o.u)
+	return getResourceStatus(o.instance)
 }
 
 func (o *Claim) GetAge() string {
-	return GetAge(o.u)
+	return GetAge(o.instance)
 }
 
 func (o *Claim) GetObjectDetails() ObjectDetails {
-	if o.u == nil {
+	if o.instance == nil {
 		return ObjectDetails{}
 	}
-	return getObjectDetails(o.u)
+	return getObjectDetails(o.instance)
 }
 
 func (o *Claim) IsReady() bool {
@@ -38,7 +38,7 @@ func (o *Claim) IsReady() bool {
 
 func (o *Claim) GetRelated(filterByLabel func(metav1.GroupVersionKind, string, string) ([]unstructured.Unstructured, error)) ([]*unstructured.Unstructured, error) {
 	related := make([]*unstructured.Unstructured, 0)
-	obj := o.u.Object
+	obj := o.instance.Object
 
 	// Get resource reference
 	u, err := getObjRef(obj, fieldsClaimResource)
@@ -59,9 +59,9 @@ func (o *Claim) GetRelated(filterByLabel func(metav1.GroupVersionKind, string, s
 		//  hence we need to manually fill them. This limitation will be removed with
 		//  https://github.com/crossplaneio/crossplane/blob/master/design/one-pager-simple-class-selection.md
 		if u.GetAPIVersion() == "" {
-			u.SetAPIVersion(o.u.GetAPIVersion())
-			u.SetKind(o.u.GetKind() + "Class")
-			u.SetNamespace(o.u.GetNamespace())
+			u.SetAPIVersion(o.instance.GetAPIVersion())
+			u.SetKind(o.instance.GetKind() + "Class")
+			u.SetNamespace(o.instance.GetNamespace())
 		}
 		related = append(related, u)
 	}
@@ -74,7 +74,7 @@ func (o *Claim) GetRelated(filterByLabel func(metav1.GroupVersionKind, string, s
 	if u != nil {
 		u.SetAPIVersion("v1")
 		u.SetKind("Secret")
-		u.SetNamespace(o.u.GetNamespace())
+		u.SetNamespace(o.instance.GetNamespace())
 		if err != nil {
 			return related, err
 		}

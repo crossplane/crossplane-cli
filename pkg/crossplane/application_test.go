@@ -96,7 +96,7 @@ func TestApplication_GetObjectDetails(t *testing.T) {
 	for name, tc := range cases {
 		t.Run(name, func(t *testing.T) {
 			o := &Application{
-				u: tc.args.u,
+				instance: tc.args.u,
 			}
 			gotResult := o.GetObjectDetails()
 			if diff := cmp.Diff(tc.want.result, gotResult,

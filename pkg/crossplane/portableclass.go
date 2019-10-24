@@ -10,14 +10,14 @@ var (
 )
 
 type PortableClass struct {
-	u *unstructured.Unstructured
+	instance *unstructured.Unstructured
 }
 
 func NewPortableClass(u *unstructured.Unstructured) *PortableClass {
-	return &PortableClass{u: u}
+	return &PortableClass{instance: u}
 }
 func (o *PortableClass) GetAge() string {
-	return GetAge(o.u)
+	return GetAge(o.instance)
 }
 
 func (o *PortableClass) GetStatus() string {
@@ -29,15 +29,15 @@ func (o *PortableClass) IsReady() bool {
 }
 
 func (o *PortableClass) GetObjectDetails() ObjectDetails {
-	if o.u == nil {
+	if o.instance == nil {
 		return ObjectDetails{}
 	}
-	return getObjectDetails(o.u)
+	return getObjectDetails(o.instance)
 }
 
 func (o *PortableClass) GetRelated(filterByLabel func(metav1.GroupVersionKind, string, string) ([]unstructured.Unstructured, error)) ([]*unstructured.Unstructured, error) {
 	related := make([]*unstructured.Unstructured, 0)
-	obj := o.u.Object
+	obj := o.instance.Object
 
 	// Get class reference
 	u, err := getObjRef(obj, fieldsPCClass)

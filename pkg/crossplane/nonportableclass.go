@@ -12,15 +12,15 @@ var (
 )
 
 type NonPortableClass struct {
-	u *unstructured.Unstructured
+	instance *unstructured.Unstructured
 }
 
 func NewNonPortableClass(u *unstructured.Unstructured) *NonPortableClass {
-	return &NonPortableClass{u: u}
+	return &NonPortableClass{instance: u}
 }
 
 func (o *NonPortableClass) GetAge() string {
-	return GetAge(o.u)
+	return GetAge(o.instance)
 }
 
 func (o *NonPortableClass) GetStatus() string {
@@ -32,15 +32,15 @@ func (o *NonPortableClass) IsReady() bool {
 }
 
 func (o *NonPortableClass) GetObjectDetails() ObjectDetails {
-	if o.u == nil {
+	if o.instance == nil {
 		return ObjectDetails{}
 	}
-	return getObjectDetails(o.u)
+	return getObjectDetails(o.instance)
 }
 
 func (o *NonPortableClass) GetRelated(filterByLabel func(metav1.GroupVersionKind, string, string) ([]unstructured.Unstructured, error)) ([]*unstructured.Unstructured, error) {
 	related := make([]*unstructured.Unstructured, 0)
-	obj := o.u.Object
+	obj := o.instance.Object
 	u, err := getObjRef(obj, fieldsNPCProvider)
 	if err != nil {
 		return related, err
@@ -49,7 +49,7 @@ func (o *NonPortableClass) GetRelated(filterByLabel func(metav1.GroupVersionKind
 	if u != nil {
 		// TODO(hasan): Hack to set apiVersion for Provider until full object reference is available.
 		if u.GetAPIVersion() == "" {
-			oApiVersion := o.u.GetAPIVersion()
+			oApiVersion := o.instance.GetAPIVersion()
 			s := strings.Split(oApiVersion, ".")
 			a := strings.Join(s[1:], ".")
 

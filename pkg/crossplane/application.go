@@ -17,27 +17,27 @@ var (
 )
 
 type Application struct {
-	u *unstructured.Unstructured
+	instance *unstructured.Unstructured
 }
 
 func NewApplication(u *unstructured.Unstructured) *Application {
-	return &Application{u: u}
+	return &Application{instance: u}
 }
 
 func (o *Application) GetStatus() string {
-	return getNestedString(o.u.Object, fieldsStatusState...)
+	return getNestedString(o.instance.Object, fieldsStatusState...)
 }
 
 func (o *Application) GetAge() string {
-	return GetAge(o.u)
+	return GetAge(o.instance)
 }
 
 func (o *Application) GetObjectDetails() ObjectDetails {
-	u := o.u
+	u := o.instance
 	if u == nil {
 		return ObjectDetails{}
 	}
-	return getObjectDetails(o.u)
+	return getObjectDetails(o.instance)
 }
 
 func (o *Application) IsReady() bool {
@@ -46,7 +46,7 @@ func (o *Application) IsReady() bool {
 
 func (o *Application) GetRelated(filterByLabel func(metav1.GroupVersionKind, string, string) ([]unstructured.Unstructured, error)) ([]*unstructured.Unstructured, error) {
 	related := make([]*unstructured.Unstructured, 0)
-	obj := o.u.Object
+	obj := o.instance.Object
 
 	// Get resource reference
 	u, err := getObjRef(obj, fieldsStatusClusterRef)
@@ -63,7 +63,7 @@ func (o *Application) GetRelated(filterByLabel func(metav1.GroupVersionKind, str
 	for _, k := range resourceKinds {
 		uArr, err := filterByLabel(metav1.GroupVersionKind{
 			Kind: k,
-		}, o.u.GetNamespace(), getNestedLabelSelector(obj, fieldsAppResourceMatchLabels...))
+		}, o.instance.GetNamespace(), getNestedLabelSelector(obj, fieldsAppResourceMatchLabels...))
 		// Ignore NoMatchError since all resources/kinds may not be available on the API,
 		// e.g. ignore if AWS stack is not installed when working GCP only.
 		if err != nil && !meta.IsNoMatchError(err) {

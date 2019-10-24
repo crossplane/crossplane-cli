@@ -10,26 +10,26 @@ var (
 )
 
 type Managed struct {
-	u *unstructured.Unstructured
+	instance *unstructured.Unstructured
 }
 
 func NewManaged(u *unstructured.Unstructured) *Managed {
-	return &Managed{u: u}
+	return &Managed{instance: u}
 }
 
 func (o *Managed) GetStatus() string {
-	return getResourceStatus(o.u)
+	return getResourceStatus(o.instance)
 }
 
 func (o *Managed) GetAge() string {
-	return GetAge(o.u)
+	return GetAge(o.instance)
 }
 
 func (o *Managed) GetObjectDetails() ObjectDetails {
-	if o.u == nil {
+	if o.instance == nil {
 		return ObjectDetails{}
 	}
-	return getObjectDetails(o.u)
+	return getObjectDetails(o.instance)
 }
 
 func (o *Managed) IsReady() bool {
@@ -38,7 +38,7 @@ func (o *Managed) IsReady() bool {
 
 func (o *Managed) GetRelated(filterByLabel func(metav1.GroupVersionKind, string, string) ([]unstructured.Unstructured, error)) ([]*unstructured.Unstructured, error) {
 	related := make([]*unstructured.Unstructured, 0)
-	obj := o.u.Object
+	obj := o.instance.Object
 
 	// Get claim reference
 	u, err := getObjRef(obj, fieldsManagedClaim)
@@ -68,10 +68,10 @@ func (o *Managed) GetRelated(filterByLabel func(metav1.GroupVersionKind, string,
 		u.SetKind("Secret")
 		// For backward compatibility with namespaced managed resources, if namespaced, search secret in the
 		// same namespace as managed resource otherwise get namespace from spec.writeConnectionSecretsToNamespace
-		if o.u.GetNamespace() == "" {
+		if o.instance.GetNamespace() == "" {
 			u.SetNamespace(getNestedString(obj, fieldsWriteConnSecretToNS...))
 		} else {
-			u.SetNamespace(o.u.GetNamespace())
+			u.SetNamespace(o.instance.GetNamespace())
 		}
 
 		related = append(related, u)
