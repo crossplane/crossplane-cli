@@ -63,11 +63,11 @@ func NewSimplePrinter() *SimplePrinter {
 
 // Prints prints tabbed overview and details in order for a given array of nodes.
 func (p *SimplePrinter) Print(nodes []*Node) error {
-	err := p.printOverview(nodes)
+	err := p.printAllDetails(nodes)
 	if err != nil {
 		return err
 	}
-	err = p.printAllDetails(nodes)
+	err = p.printOverview(nodes)
 	if err != nil {
 		return err
 	}
@@ -119,13 +119,6 @@ func (p *SimplePrinter) printOverview(nodes []*Node) error {
 	return nil
 }
 func (p *SimplePrinter) printAllDetails(nodes []*Node) error {
-	titleF := color.New(color.Bold).Add(color.Underline)
-	_, err := titleF.Println("DETAILS")
-	if err != nil {
-		return err
-	}
-	fmt.Fprintln(p.tabWriter, "")
-
 	allDetails := ""
 	for _, n := range nodes {
 		d := getDetailsText(n)
@@ -135,7 +128,7 @@ func (p *SimplePrinter) printAllDetails(nodes []*Node) error {
 		allDetails += d
 	}
 	fmt.Fprintln(p.tabWriter, strings.Trim(strings.TrimSpace(allDetails), "-"))
-	err = p.tabWriter.Flush()
+	err := p.tabWriter.Flush()
 	if err != nil {
 		return err
 	}
