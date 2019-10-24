@@ -1,0 +1,6 @@
+### binary ###
+bin/kubectl-crossplane-trace
+
+### macOS ###
+.DS_Store
+
