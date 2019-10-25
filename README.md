@@ -50,6 +50,8 @@ make uninstall
 
 ## Usage
 
+### Stack commands 
+
 ```
 kubectl crossplane stack init 'myname/mysubname'
 kubectl crossplane stack build
@@ -59,6 +61,30 @@ kubectl crossplane stack generate-install 'myname/mysubname' | kubectl apply --n
 kubectl crossplane stack list
 kubectl crossplane stack uninstall 'myname-mysubname'
 ```
+
+### Trace command
+
+Trace command aims to ease debugging and troubleshooting process by providing a holistic view for a particular object.
+It finds the relevant objects for a given one and provides detailed information.
+
+```
+$ kubectl crossplane trace TYPE[.GROUP] NAME [-n| --namespace NAMESPACE]
+```
+
+Examples:
+
+```
+# Trace a KubernetesApplication
+$ kubectl crossplane trace KubernetesApplication wordpress-app-83f04457-0b1b-4532-9691-f55cf6c0da6e -n app-project1-dev
+
+# Trace a MySQLInstance
+$ kubectl crossplane trace MySQLInstance wordpress-mysql-83f04457-0b1b-4532-9691-f55cf6c0da6e -n app-project1-dev
+
+# Graph output, which can be visualized with graphviz as follows.
+$ kubectl crossplane trace KubernetesApplication wordpress-app-83f04457-0b1b-4532-9691-f55cf6c0da6e -n app-project1-dev -o dot | dot -Tpng > /tmp/output.png
+```
+
+For more information, see [the trace command documentation](docs/trace-command.md).
 
 # Quick Start: Stacks
 
