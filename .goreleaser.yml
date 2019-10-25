@@ -1,5 +1,18 @@
 # For more about how to configure goreleaser, see:
 # https://goreleaser.com/customization/
+#
+# To release:
+# - Set the GITHUB_TOKEN environment variable
+# - Tag a commit with a release, such as 'v0.2.0'
+# - Push the tag
+# - Run `gorelease release` from the root of the repo.
+# - Follow the link which is printed to edit the draft release,
+#   then publish the release.
+#
+# NOTE: goreleaser will release to the github repo which is set
+# as the 'origin' remote.
+#
+# See https://goreleaser.com/release/ for more details.
 before:
   hooks:
     # you may remove this if you don't use vgo
@@ -91,3 +104,8 @@ changelog:
     exclude:
     - '^docs:'
     - '^test:'
+
+release:
+  # If set to true, will not auto-publish the release.
+  # Default is false.
+  draft: true
