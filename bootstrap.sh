@@ -27,7 +27,7 @@ if [[ "${RELEASE}" == "master" ]]; then
   curl -sL -o "${PREFIX}"/bin/kubectl-crossplane-stack-generate_install https://raw.githubusercontent.com/crossplaneio/crossplane-cli/"${RELEASE}"/bin/kubectl-crossplane-stack-generate_install >/dev/null
   curl -sL -o "${PREFIX}"/bin/kubectl-crossplane-stack-list https://raw.githubusercontent.com/crossplaneio/crossplane-cli/"${RELEASE}"/bin/kubectl-crossplane-stack-list >/dev/null
 else
-  curl -sL https://github.com/crossplaneio/crossplane-cli/releases/download/"${RELEASE}"/crossplane-cli-"${RELEASE}"-"${PLATFORM}".tar.gz | tar -xz --strip 1 -C "${PREFIX}"/bin
+  curl -sL https://github.com/crossplaneio/crossplane-cli/releases/download/"${RELEASE}"/crossplane-cli_"${RELEASE}"_"${PLATFORM}"_amd64.tar.gz | tar -xz --strip 1 -C "${PREFIX}"/bin
 fi
 
 chmod +x "${PREFIX}"/bin/kubectl-crossplane-*

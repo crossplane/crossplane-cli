@@ -18,12 +18,20 @@ builds:
   # Binary name.
   # Can be a path (e.g. `bin/app`) to wrap the binary in a directory.
   # Default is the name of the project directory.
-  binary: "kubectl-crossplane-trace"
+  #
+  # Putting the binary in a folder allows us to put some documentation
+  # in the archive root, while also extracting all binary files into
+  # the destination directory in a single command.
+  binary: "bin/kubectl-crossplane-trace"
 
   # Custom environment variables to be set during the builds.
   # Default is empty.
   env:
     - CGO_ENABLED=0
+    - GO111MODULE=on
+
+  goarch:
+  - amd64
 
 archives:
 -
@@ -64,11 +72,6 @@ archives:
     - goos: windows
       format: zip
 
-  # Additional files/globs you want to add to the archive.
-  # Defaults are any files matching `LICENCE*`, `LICENSE*`,
-  # `README*` and `CHANGELOG*` (case-insensitive).
-  files:
-    - 'NONE'
 checksum:
   name_template: 'checksums.txt'
 snapshot:

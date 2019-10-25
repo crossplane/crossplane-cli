@@ -1,9 +1,12 @@
-### binary ###
+# binary
 bin/kubectl-crossplane-trace
 
-### macOS ###
+# macOS
 .DS_Store
 
 .idea/
 .kube/
+
+# Release builds
+dist/
 
