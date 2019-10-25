@@ -4,6 +4,7 @@ before:
   hooks:
     # you may remove this if you don't use vgo
     - env GO111MODULE=on go mod tidy
+    - make clean
 builds:
 # You can have multiple builds defined as a yaml list
 -
@@ -49,7 +50,10 @@ archives:
   #   - `{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}`
   # - if format is `binary`:
   #   - `{{ .Binary }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}`
-  # name_template: "{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
+  #
+  # We use the tag directly here so that the archive name matches the tag, which means it
+  # also matches the paths for the commands which are bash scripts.
+  name_template: "{{ .ProjectName }}_{{ .Tag }}_{{ .Os }}_{{ .Arch }}"
 
   # Set to true, if you want all files in the archive to be in a single directory.
   # If set to true and you extract the archive 'goreleaser_Linux_arm64.tar.gz',
@@ -71,6 +75,11 @@ archives:
   format_overrides:
     - goos: windows
       format: zip
+
+  # goreleaser will bundle other things into our archive for us, so we're using
+  # that functionality to bundle our bash scripts into the archive.
+  files:
+    - bin/kubectl-crossplane-*
 
 checksum:
   name_template: 'checksums.txt'

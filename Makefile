@@ -13,7 +13,7 @@ test:
 .PHONY: test
 
 clean:
-	rm bin/kubectl-crossplane-trace
+	rm -f bin/kubectl-crossplane-trace
 .PHONY: clean
 
 install:
