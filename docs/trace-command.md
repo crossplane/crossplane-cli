@@ -20,28 +20,22 @@ traced.
 
 The trace tool is part of the crossplane kubectl plugin and can be used as follows:
 
-```bash
-$ kubectl crossplane trace --help
-Usage: kubectl crossplane trace TYPE[.GROUP] NAME [-n| --namespace NAMESPACE] [-h|--help]
-
--h, --help                  Shows this help message
-    --kubeconfig string     Absolute path to the kubeconfig file
--n, --namespace string      Namespace (default "default")
--o, --outputFormat string   Output format. One of: dot
+```shell
+kubectl crossplane trace TYPE[.GROUP] NAME [-n| --namespace NAMESPACE] [--kubeconfig KUBECONFIG] [-o| --outputFormat dot]
 ```
 
 Examples:
 
-```
+```shell
 ### Text output
 # Trace a KubernetesApplication
-$ kubectl crossplane trace KubernetesApplication wordpress-app-83f04457-0b1b-4532-9691-f55cf6c0da6e -n app-project1-dev
+kubectl crossplane trace KubernetesApplication wordpress-app-83f04457-0b1b-4532-9691-f55cf6c0da6e -n app-project1-dev
 
 # Trace a MySQLInstance
-$ kubectl crossplane trace MySQLInstance wordpress-mysql-83f04457-0b1b-4532-9691-f55cf6c0da6e -n app-project1-dev
+kubectl crossplane trace MySQLInstance wordpress-mysql-83f04457-0b1b-4532-9691-f55cf6c0da6e -n app-project1-dev
 
 ### Graph output, which can be visualized with graphviz as follows.
-$ kubectl crossplane trace KubernetesApplication wordpress-app-83f04457-0b1b-4532-9691-f55cf6c0da6e -n app-project1-dev -o dot | dot -Tpng > /tmp/output.png
+kubectl crossplane trace KubernetesApplication wordpress-app-83f04457-0b1b-4532-9691-f55cf6c0da6e -n app-project1-dev -o dot | dot -Tpng > /tmp/output.png
 ```
 
 ### State of a resource
@@ -51,7 +45,7 @@ overview) and graph output (as node attributes) accordingly.
 
 | State | Text Representation | Graph Representation | 
 | :--------: | :---: | :---: |
-| Ready    | ✔ | Solid - Black |
+| Ready    | ✓ | Solid - Black |
 | NotReady | ! | Solid - Orange |
 | Missing  | ✕ | Dotted - Red |
 
@@ -77,11 +71,11 @@ declarations as shown below.
     - listing/filtering all `KubernetesApplicationResources` and `ResourceClaims` in the same namespace with labels 
   at `spec.resourceSelector.matchLabels`
   
-- Kubernetes Application Resource 
+- [Kubernetes Application Resource](https://github.com/crossplaneio/crossplane/blob/master/docs/concepts.md#crossplane-workloads)
     - `status.clusterRef` -> KubernetesCluster
     - `spec.secrets` -> [Connection secrets](https://github.com/crossplaneio/crossplane/blob/master/docs/concepts.md#connection-secrets)
    
-- [Resource Claim](https://github.com/crossplaneio/crossplane/blob/master/docs/concepts.md#kubernetes-application)
+- [Resource Claim](https://github.com/crossplaneio/crossplane/blob/master/docs/concepts.md#resource-claim)
     - `spec.resourceRef` -> Managed Resource
     - `spec.classRef` -> Resource Class
     - `spec.writeConnectionSecretToRef` -> [Connection secrets](https://github.com/crossplaneio/crossplane/blob/master/docs/concepts.md#connection-secrets)
@@ -91,7 +85,7 @@ declarations as shown below.
     - `spec.classRef` -> Resource Class
     - `spec.writeConnectionSecretToRef` -> [Connection secrets](https://github.com/crossplaneio/crossplane/blob/master/docs/concepts.md#connection-secrets)
   
-- [Resource Class](https://github.com/crossplaneio/crossplane/blob/master/docs/concepts.md#non-portable-resource-class) 
+- [Resource Class](https://github.com/crossplaneio/crossplane/blob/master/docs/concepts.md#resource-class) 
     - `specTemplate.providerRef` -> Provider
 
 - [Provider](https://github.com/crossplaneio/crossplane/blob/master/docs/concepts.md#provider)
