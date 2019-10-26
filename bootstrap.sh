@@ -7,7 +7,7 @@ if [[ -z "${PREFIX}" ]]; then
 fi
 
 if [[ -z "${RELEASE}" ]]; then
-  RELEASE=master
+  RELEASE=$(curl -L -s -H 'Accept: application/json' https://github.com/crossplaneio/crossplane-cli/releases/latest | sed -e 's/.*"tag_name":"\([^"]*\)".*/\1/')
 fi
 
 PLATFORM="linux"

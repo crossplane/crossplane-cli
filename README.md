@@ -2,25 +2,33 @@
 
 ## Installation
 
-Here's the one-liner to do it:
+Here's the one-liner to install latest released version:
 
 ```
-RELEASE=master && curl -sL https://raw.githubusercontent.com/crossplaneio/crossplane-cli/"${RELEASE}"/bootstrap.sh | RELEASE=${RELEASE} bash
+curl -sL https://raw.githubusercontent.com/crossplaneio/crossplane-cli/master/bootstrap.sh | bash
 ```
 
 The behavior is customizable via environment variables:
 
 ```
-RELEASE=9760f8a7fd4fdd7f9a6cf3d5323a605412a65d11
+RELEASE=v0.1.0
 PREFIX=${HOME}
 curl -sL https://raw.githubusercontent.com/crossplaneio/crossplane-cli/"${RELEASE}"/bootstrap.sh | env PREFIX=${PREFIX} RELEASE=${RELEASE} bash
 ```
 
-### Installing from source
-
-If you have the source repository checked out, installing is simple:
+You can get latest master for `stack` commands by setting `RELEASE` as `master`. But please note, `trace` command will 
+not be installed in this case.
 
 ```
+RELEASE=master && curl -sL https://raw.githubusercontent.com/crossplaneio/crossplane-cli/"${RELEASE}"/bootstrap.sh | RELEASE=${RELEASE} bash
+```
+
+### Installing from source
+
+If you have the source repository checked out, installing is simple as long as you have `golang` installed:
+
+```
+make build
 make install
 ```
 
@@ -30,7 +38,7 @@ If you followed the installation process above, you can remove
 everything with:
 
 ```
-rm /usr/local/bin/kubectl-crossplane-stack-*
+rm /usr/local/bin/kubectl-crossplane-*
 ```
 
 Or, if you customized the installation prefix:
