@@ -51,7 +51,8 @@ func main() {
 	resource := pflag.Arg(0)
 	resourceName := pflag.Arg(1)
 	if resource == "" || resourceName == "" {
-		failWithMessage("missing arguments: SUBCOMMAND TYPE[.GROUP] NAME [-n|--namespace NAMESPACE]")
+		printHelp()
+		os.Exit(-1)
 	}
 	fmt.Fprintf(os.Stderr, "Collecting information for %s %s in namespace %s...\n\n", resource, resourceName, namespace)
 
@@ -92,10 +93,8 @@ func main() {
 		if err != nil {
 			failWithMessage(err.Error())
 		}
-	} else if outputFormat == "yaml" || outputFormat == "json" {
-		failWithMessage(fmt.Sprintf("%s outputFormat format is not supported yet", outputFormat))
 	} else {
-		failWithMessage("unknown outputFormat format, should be one of: dot|yaml|json")
+		failWithMessage("unknown outputFormat format, should be one of: dot")
 	}
 }
 
@@ -105,7 +104,26 @@ func failWithMessage(msg string) {
 }
 
 func printHelp() {
-	fmt.Fprintf(os.Stderr, `Usage: kubectl crossplane trace TYPE[.GROUP] NAME [-n| --namespace NAMESPACE] [-h|--help]
+	fmt.Fprintf(os.Stderr, `Trace a Crossplane resource
+
+  Traces a given Crossplane resource and gathers information of relevant resources. Displayed information contains 
+details of each resource status as well as an overview summarizing the overall state.
+
+  By specifying the output format as 'dot', you can obtain a graph definition in dot format which can be vizualized with
+GraphViz.
+
+  Each resource in the trace output categorized in one of the following states which is represented in text (state 
+column of overview) and graph output (as node attributes) accordingly.
+ 
+ -------------------------------------------------------
+|   State  | Text Representation | Graph Representation | 
+|----------|---------------------|----------------------|
+| Ready    |          ✓          |     Solid - Black    |
+| NotReady |          !          |    Solid - Orange    |
+| Missing  |          ✕          |     Dotted - Red     |
+ ------------------------------------------------------- 
+
+Usage: kubectl crossplane trace TYPE[.GROUP] NAME [-n| --namespace NAMESPACE] [-h|--help]
 
 `)
 	pflag.PrintDefaults()

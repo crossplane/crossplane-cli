@@ -21,7 +21,7 @@ install:
 .PHONY: install
 
 uninstall:
-	rm $(INSTALL_DIR)/kubectl-crossplane-stack-*
+	rm $(INSTALL_DIR)/kubectl-crossplane-*
 .PHONY: uninstall
 
 integration-test:

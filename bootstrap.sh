@@ -7,7 +7,7 @@ if [[ -z "${PREFIX}" ]]; then
 fi
 
 if [[ -z "${RELEASE}" ]]; then
-  RELEASE=master
+  RELEASE=$(curl -L -s -H 'Accept: application/json' https://github.com/crossplaneio/crossplane-cli/releases/latest | sed -e 's/.*"tag_name":"\([^"]*\)".*/\1/')
 fi
 
 PLATFORM="linux"
@@ -17,7 +17,7 @@ fi
 
 set -x
 
-if [[ "${RELEASE}" == "master" ]]; then
+if [[ "${RELEASE}" == "master" || "${RELEASE}" == release-0.1 ]]; then
   echo "NOTICE: the trace command is not available from master. RELEASE must be set to a released version (such as v0.2.0). See https://github.com/crossplaneio/crossplane-cli/releases for the full list of releases." >&2
   curl -sL -o "${PREFIX}"/bin/kubectl-crossplane-stack-build https://raw.githubusercontent.com/crossplaneio/crossplane-cli/"${RELEASE}"/bin/kubectl-crossplane-stack-build >/dev/null
   curl -sL -o "${PREFIX}"/bin/kubectl-crossplane-stack-init https://raw.githubusercontent.com/crossplaneio/crossplane-cli/"${RELEASE}"/bin/kubectl-crossplane-stack-init >/dev/null

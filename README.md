@@ -2,25 +2,33 @@
 
 ## Installation
 
-Here's the one-liner to do it:
+Here's the one-liner to install latest released version:
 
 ```
-RELEASE=master && curl -sL https://raw.githubusercontent.com/crossplaneio/crossplane-cli/"${RELEASE}"/bootstrap.sh | RELEASE=${RELEASE} bash
+curl -sL https://raw.githubusercontent.com/crossplaneio/crossplane-cli/master/bootstrap.sh | bash
 ```
 
 The behavior is customizable via environment variables:
 
 ```
-RELEASE=9760f8a7fd4fdd7f9a6cf3d5323a605412a65d11
+RELEASE=v0.1.0
 PREFIX=${HOME}
 curl -sL https://raw.githubusercontent.com/crossplaneio/crossplane-cli/"${RELEASE}"/bootstrap.sh | env PREFIX=${PREFIX} RELEASE=${RELEASE} bash
 ```
 
-### Installing from source
-
-If you have the source repository checked out, installing is simple:
+You can get latest master for `stack` commands by setting `RELEASE` as `master`. But please note, `trace` command will 
+not be installed in this case.
 
 ```
+RELEASE=master && curl -sL https://raw.githubusercontent.com/crossplaneio/crossplane-cli/"${RELEASE}"/bootstrap.sh | RELEASE=${RELEASE} bash
+```
+
+### Installing from source
+
+If you have the source repository checked out, installing is simple as long as you have `golang` installed:
+
+```
+make build
 make install
 ```
 
@@ -30,7 +38,7 @@ If you followed the installation process above, you can remove
 everything with:
 
 ```
-rm /usr/local/bin/kubectl-crossplane-stack-*
+rm /usr/local/bin/kubectl-crossplane-*
 ```
 
 Or, if you customized the installation prefix:
@@ -50,6 +58,8 @@ make uninstall
 
 ## Usage
 
+### Stack commands 
+
 ```
 kubectl crossplane stack init 'myname/mysubname'
 kubectl crossplane stack build
@@ -59,6 +69,30 @@ kubectl crossplane stack generate-install 'myname/mysubname' | kubectl apply --n
 kubectl crossplane stack list
 kubectl crossplane stack uninstall 'myname-mysubname'
 ```
+
+### Trace command
+
+Trace command aims to ease debugging and troubleshooting process by providing a holistic view for a particular object.
+It finds the relevant objects for a given one and provides detailed information.
+
+```
+kubectl crossplane trace TYPE[.GROUP] NAME [-n| --namespace NAMESPACE]
+```
+
+Examples:
+
+```
+# Trace a KubernetesApplication
+kubectl crossplane trace KubernetesApplication wordpress-app-83f04457-0b1b-4532-9691-f55cf6c0da6e -n app-project1-dev
+
+# Trace a MySQLInstance
+kubectl crossplane trace MySQLInstance wordpress-mysql-83f04457-0b1b-4532-9691-f55cf6c0da6e -n app-project1-dev
+
+# Graph output, which can be visualized with graphviz as follows.
+kubectl crossplane trace KubernetesApplication wordpress-app-83f04457-0b1b-4532-9691-f55cf6c0da6e -n app-project1-dev -o dot | dot -Tpng > /tmp/output.png
+```
+
+For more information, see [the trace command documentation](docs/trace-command.md).
 
 # Quick Start: Stacks
 
