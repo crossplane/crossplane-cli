@@ -18,7 +18,9 @@ fi
 set -x
 
 if [[ "${RELEASE}" == "master" || "${RELEASE}" == release-0.1 ]]; then
+  set +x
   echo "NOTICE: the trace command is not available from master. RELEASE must be set to a released version (such as v0.2.0). See https://github.com/crossplaneio/crossplane-cli/releases for the full list of releases." >&2
+  set -x
   curl -sL -o "${PREFIX}"/bin/kubectl-crossplane-stack-build https://raw.githubusercontent.com/crossplaneio/crossplane-cli/"${RELEASE}"/bin/kubectl-crossplane-stack-build >/dev/null
   curl -sL -o "${PREFIX}"/bin/kubectl-crossplane-stack-init https://raw.githubusercontent.com/crossplaneio/crossplane-cli/"${RELEASE}"/bin/kubectl-crossplane-stack-init >/dev/null
   curl -sL -o "${PREFIX}"/bin/kubectl-crossplane-stack-publish https://raw.githubusercontent.com/crossplaneio/crossplane-cli/"${RELEASE}"/bin/kubectl-crossplane-stack-publish >/dev/null
