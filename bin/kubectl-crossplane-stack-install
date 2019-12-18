@@ -7,40 +7,58 @@ function usage {
   # would be overridden more often than stack image source, but I kept going back and
   # forth on that originally. Overriding the source is very useful when developing a
   # stack locally, for example.
-  echo "Usage: kubectl crossplane stack install [-h|--help] [-c|--cluster] STACK_IMAGE_NAME [STACK_NAME [STACK_IMAGE_SOURCE]]" >&2
+  echo "Usage: kubectl crossplane stack install [-h|--help] [-c|--cluster] [-n|--namespace NAMESPACE] STACK_IMAGE_NAME [STACK_NAME [STACK_IMAGE_SOURCE]]" >&2
   echo "" >&2
   echo "STACK_IMAGE_NAME is the name of the stack in the registry to install." >&2
   echo "If the STACK_NAME is not provided, the stack name will be the STACK_IMAGE_NAME with any '/' characters" >&2
   echo "converted to '-' characters." >&2
   echo "" >&2
   echo "-h, --help: Print usage" >&2
-  echo "-c, --cluster: Uninstall a Cluster scoped stack" >&2
+  echo "-c, --cluster: Install a Cluster scoped stack" >&2
+  echo "-n, --namespace: Install into the given namespace" >&2
   echo "" >&2
   echo 'For more advanced usage, see the lower-level `kubectl crossplane stack generate-install` command.' >&2
 }
 
-function check_help {
-  if [ "${1}" == "-h" -o "${1}" == "--help" ] ; then
-    usage
-    exit 1
-  fi
-}
+CLUSTER_STACK=""
+CLUSTER_OPT=""
+NAMESPACE_OPT=""
+POSITIONAL=()
 
-check_help "${1}"
+while [[ $# -gt 0 ]]; do
+  opt="$1"
 
-if [[ $# -lt 1 ]] ; then
-  usage
-  exit 1
-fi
+  case $opt in
+    -c|--cluster)
+      CLUSTER_STACK="cluster"
+      CLUSTER_OPT="$opt"
+      shift
+      ;;
+    -n=*|--namespace=*)
+      NAMESPACE="${opt#*=}"
+      NAMESPACE_OPT="--namespace=${NAMESPACE}"
+      shift;
+      ;;
+    -n|--namespace)
+      NAMESPACE="$2"
+      NAMESPACE_OPT="--namespace=${NAMESPACE}"
+      shift
+      shift
+      ;;
+    -h|--help)
+      usage
+      exit 1
+      ;;
+    *)
+      POSITIONAL+=("$1")
+      shift
+      ;;
+  esac
+done
 
-CLUSTER_OPT=${1}
-if [ "${CLUSTER_OPT}" == "-c" -o "${CLUSTER_OPT}" == "--cluster" ]; then
-  CLUSTER_STACK="cluster"
-  shift
-else
-  CLUSTER_OPT=""
-  CLUSTER_STACK=""
-fi
+# Reset the positional parameters ($1, ..) from the array of arguments
+# that didn't match our known options
+set -- "${POSITIONAL[@]}"
 
 STACK_IMAGE_NAME="${1}"
 # For kubernetes fields, we aren't able to use slashes, and
@@ -51,8 +69,8 @@ KUBEY_STACK_IMAGE_NAME=$( echo "${STACK_IMAGE_NAME}" | tr '/' '-' )
 # by passing arguments
 STACK_NAME="${2:-${KUBEY_STACK_IMAGE_NAME}}"
 
-kubectl crossplane stack generate-install ${CLUSTER_OPT} "$@" | kubectl apply -f -
+kubectl crossplane stack generate-install ${CLUSTER_OPT} "$@" | kubectl apply ${NAMESPACE_OPT} -f -
 # Printing out the stack install object from the cluster may be useful
 # for whoever ran this command, and there's no other output anyway, so
 # we might as well.
-kubectl get -o yaml "${CLUSTER_STACK}"stackinstall "${STACK_NAME}"
+kubectl get ${NAMESPACE_OPT} -o yaml "${CLUSTER_STACK}"stackinstall "${STACK_NAME}"
