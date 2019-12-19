@@ -364,5 +364,22 @@ See the `config/stack/overrides` directory for details about where the
 overrides live. See the `stack.Makefile` for details about how
 `local-build` works.
 
+### Setup RBAC
+
+We can setup extra permissions to grant access to the resources which are not part of your stack. This can be done by specifing the permissions in the CustomResourceDefinition YAML of our custom resource.
+```
+# Human readable title of application.
+title: Sample Wordpress Stack
+...
+# RBAC Roles will be generated permitting this stack to use all verbs on all
+# resources in the groups listed below.
+permissionScope: Namespaced
+dependsOn:
+- crd: "kubernetesclusters.compute.crossplane.io/v1alpha1"
+- crd: "mysqlinstances.database.crossplane.io/v1alpha1"
+- crd: "kubernetesapplications.workload.crossplane.io/v1alpha1"
+...
+```
+For a detailed example, check [this](https://github.com/crossplaneio/sample-stack-wordpress/blob/bf35149b708b3649fb08fcfa89a5f2ddabf02674/config/stack/manifests/app.yaml#L65)
 
 [kubebuilder quick start]: https://book.kubebuilder.io/quick-start.html
