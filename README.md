@@ -366,7 +366,7 @@ overrides live. See the `stack.Makefile` for details about how
 
 ### Setup RBAC
 
-We can setup extra permissions to grant access to the resources which are not part of your stack. This can be done by specifing the permissions in the CustomResourceDefinition YAML of our custom resource.
+We can setup extra permissions to grant access to the resources which are not part of our stack. This can be done by specifing the permissions in the CustomResourceDefinition YAML of our custom resource.
 ```
 # Human readable title of application.
 title: Sample Wordpress Stack
