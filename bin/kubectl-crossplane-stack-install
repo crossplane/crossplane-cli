@@ -49,12 +49,23 @@ while [[ $# -gt 0 ]]; do
       usage
       exit 1
       ;;
+    -*)
+      echo "Unknown argument: $opt" >&2
+      usage
+      exit 1
+      ;;
     *)
       POSITIONAL+=("$1")
       shift
       ;;
   esac
 done
+
+if [ "${#POSITIONAL[@]}" -eq "0" ]; then
+  echo "Missing arguments" >&2
+  usage
+  exit 1
+fi
 
 # Reset the positional parameters ($1, ..) from the array of arguments
 # that didn't match our known options
