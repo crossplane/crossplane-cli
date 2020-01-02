@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+
+# Wrapper to unify all crossplane-cli plugin commands
+# for use by krew
+
+set -e
+BASEDIR=$(dirname $(realpath "$0"))
+
+PATH="${BASEDIR}:${PATH}" exec kubectl crossplane "$@"

@@ -93,6 +93,7 @@ archives:
   # that functionality to bundle our bash scripts into the archive.
   files:
     - bin/kubectl-crossplane-*
+    - LICENSE
 
 checksum:
   name_template: 'checksums.txt'
