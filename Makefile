@@ -17,7 +17,7 @@ clean:
 .PHONY: clean
 
 install:
-	ln -si $(abspath bin/kubectl-crossplane-*) $(INSTALL_DIR)/
+	ln -si $(abspath bin/kubectl-crossplane*) $(INSTALL_DIR)/
 .PHONY: install
 
 uninstall:
