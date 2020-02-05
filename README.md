@@ -235,6 +235,15 @@ GO111MODULE=on make manager manifests
 During development, we'll often be building and testing our stack
 locally. The local validation section shows us how we would do that.
 
+These local scenarios will attempt to run a local Docker registry in your Kubernetes cluster to help
+with publishing your Stack image for local testing scenarios.  This local validation flow has been
+tested and verified with the following software:
+
+* Docker Desktop `2.2.0.0` with Kubernetes `v1.15.5` enabled
+* Crossplane `v0.7.0`
+  [installed](https://crossplane.io/docs/master/install-crossplane.html#installation) into Docker
+  Desktop's Kubernetes cluster
+
 ### Build stack and publish locally
 
 Once the (kubebuilder) project is built in the normal way, we want to
