@@ -41,4 +41,12 @@ fi
 
 set -x
 
-make -f stack.Makefile publish
+COMMAND=publish
+
+# If stack.Makefile exists, we want to use that. Otherwise,
+# we'll use a regular Makefile.
+if [[ -e stack.Makefile ]]; then
+  make -f stack.Makefile ${COMMAND} "$@"
+else
+  make ${COMMAND} "$@"
+fi
