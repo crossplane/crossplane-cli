@@ -332,17 +332,21 @@ EOF
   echo 'Created stack.Makefile' >&2
 
 
-  if [ -f .gitignore ] ; then
-    grep -q 'stack-package/' .gitignore || cat >>.gitignore <<EOF
+  grep -q 'stack-package/' .gitignore > /dev/null 2>&1 || cat >>.gitignore <<EOF
 
 # stack-package is a generated folder, and can be considered an intermediate
 # build artifact. We don't need to check it into version control.
 stack-package/
 EOF
-    echo 'Made sure stack-package/ is in .gitignore' >&2
-  else
-    echo 'No .gitignore found; not adding stack-package/ to .gitignore' >&2
-  fi
+  echo 'Made sure stack-package/ is in .gitignore' >&2
+
+  grep -q '.git/' .dockerignore > /dev/null 2>&1 || cat >>.dockerignore <<EOF
+
+# we don't want to copy .git folder during the build since it can be quite big
+# regardless of the file size of the repo.
+.git/
+EOF
+  echo 'Made sure .git/ is in .dockerignore' >&2
 }
 
 cd -- "${INIT_DIR}"
