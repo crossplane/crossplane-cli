@@ -77,6 +77,7 @@ owners:
   email: ""
 company: ""
 category: ""
+packageType: ""
 keywords:
  - "crossplane-cli"
 website: ""
