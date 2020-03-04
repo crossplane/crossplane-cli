@@ -263,8 +263,11 @@ bundle: $(STACK_PACKAGE_REGISTRY)
 	# An alternate and simpler-looking approach would
 	# be to cat all of the files into a single crd.yaml.
 	find $(CRD_DIR) -type f -name '*.yaml' | \
-		while read filename ; do cat $$filename > \
-		$(STACK_PACKAGE_REGISTRY)/resources/$$( basename $$(echo $$filename | sed s/.yaml$$/.crd.yaml/)) \
+		while read filename ; do \
+		mkdir -p $(STACK_PACKAGE_REGISTRY)/resources/$$(basename $${filename%_*}); \
+		concise=$${filename#*_}; \
+		cat $$filename > \
+		$(STACK_PACKAGE_REGISTRY)/resources/$$( basename $${filename%_*} )/$$( basename $${concise/.yaml/.crd.yaml} ) \
 		; done
 
 	cp -r $(STACK_PACKAGE_REGISTRY_SOURCE)/* $(STACK_PACKAGE_REGISTRY)
