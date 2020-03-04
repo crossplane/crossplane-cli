@@ -64,6 +64,7 @@ function create_manifest {
   mkdir -p config/stack/manifests
   touch config/stack/manifests/app.yaml
   cat > config/stack/manifests/app.yaml <<EOF
+apiVersion: 0.1.0
 title: ""
 readme: ""
 overview: ""
