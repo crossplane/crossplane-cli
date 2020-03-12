@@ -110,7 +110,12 @@ spec:
     spec:
       containers:
       - name: "${KUBEY_STACK_NAME}-controller"
-        image: "${STACK_IMAGE_NAME}"
+        # The `image:` field is optional. If omitted, it will be
+        # filled in by the stack manager, using the same image
+        # name and tag as the package on the StackInstall object.
+        # We recommend omitting it unless you know you need it.
+        #
+        # image: "${STACK_IMAGE_NAME}"
         env:
         - name: POD_NAME
           valueFrom:
@@ -149,16 +154,6 @@ spec:
 EOF
   echo 'Created config/stack/samples/install.stack.yaml' >&2
 
-  mkdir -p config/stack/overrides
-  cat > config/stack/overrides/install.yaml <<EOF
-spec:
-  template:
-    spec:
-      containers:
-      - name: "${KUBEY_STACK_NAME}-controller"
-        image: "localhost:5000/${STACK_IMAGE_NAME}"
-EOF
-  echo 'Created config/stack/overrides/install.yaml' >&2
 }
 
 function check_for_existing_stack {
