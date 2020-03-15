@@ -1,0 +1,32 @@
+apiVersion: workload.crossplane.io/v1alpha1
+kind: KubernetesApplication
+metadata:
+  creationTimestamp: null
+  name: crossplane-install
+  namespace: crossplane-system
+spec:
+  resourceSelector:
+    matchLabels:
+      crossplane-pack: crossplane-install
+  resourceTemplates:
+  - metadata:
+      creationTimestamp: null
+      labels:
+        crossplane-pack: crossplane-install
+      name: crossplane-install-local-crossplane-serviceaccount
+    spec:
+      template:
+        apiVersion: v1
+        imagePullSecrets:
+        - name: dockerhub
+        kind: ServiceAccount
+        metadata:
+          labels:
+            app: crossplane
+            chart: crossplane-0.8.0
+            heritage: Helm
+            release: crossplane
+          name: crossplane
+  targetSelector: {}
+status:
+  conditionedStatus: {}

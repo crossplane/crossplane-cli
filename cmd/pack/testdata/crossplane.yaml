@@ -1,0 +1,13 @@
+---
+# Source: crossplane/templates/serviceaccount.yaml
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: crossplane
+  labels:
+    app: crossplane
+    chart: crossplane-0.8.0
+    release: crossplane
+    heritage: Helm
+imagePullSecrets:
+- name: dockerhub
