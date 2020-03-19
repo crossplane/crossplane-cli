@@ -84,7 +84,7 @@ func TestRunPack(t *testing.T) {
 				out: []v1alpha1.KubernetesApplicationResourceTemplate{
 					{
 						ObjectMeta: v1.ObjectMeta{
-							Name:   "test-local-test-namespace",
+							Name:   "test-test-namespace",
 							Labels: map[string]string{"test": "test"},
 						},
 						Spec: v1alpha1.KubernetesApplicationResourceSpec{

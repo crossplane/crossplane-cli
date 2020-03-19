@@ -37,18 +37,18 @@ func ReadResources(prefix string, content io.Reader, resLabels map[string]string
 		obj := &unstructured.Unstructured{}
 		if err := d.Decode(obj); err != nil {
 			if err == io.EOF {
-				// We reached the end of the job output
 				break
 			}
 			return result, err
 		}
+		// Ignore empty objects
 		if obj.GetName() == "" {
 			continue
 		}
 		kart := v1alpha1.KubernetesApplicationResourceTemplate{
 			ObjectMeta: v1.ObjectMeta{
 				// Ensure no collisions among templates in KubernetesApplications
-				Name:   fmt.Sprintf("%s-local-%s-%s", prefix, strings.ReplaceAll(obj.GetName(), ":", "-"), strings.ToLower(obj.GetKind())),
+				Name:   fmt.Sprintf("%s-%s-%s", prefix, strings.ReplaceAll(obj.GetName(), ":", "-"), strings.ToLower(obj.GetKind())),
 				Labels: resLabels,
 			},
 			Spec: v1alpha1.KubernetesApplicationResourceSpec{
