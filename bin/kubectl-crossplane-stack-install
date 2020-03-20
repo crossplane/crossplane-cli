@@ -75,7 +75,8 @@ STACK_IMAGE_NAME="${1}"
 # For kubernetes fields, we aren't able to use slashes, and
 # slashes are common for docker image names. So we remove the
 # slashes before we use the name for kubernetes resource fields.
-KUBEY_STACK_IMAGE_NAME=$( echo "${STACK_IMAGE_NAME}" | tr '/' '-' )
+# We also can't use colons and don't want to include tags in the name.
+KUBEY_STACK_IMAGE_NAME=$( echo "${STACK_IMAGE_NAME}" | tr '/' '-' | sed 's/:.*//' )
 # Defaults to the kubey stack image name, but can be overridden
 # by passing arguments
 STACK_NAME="${2:-${KUBEY_STACK_IMAGE_NAME}}"
