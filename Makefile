@@ -6,6 +6,7 @@ default:
 
 build:
 	GO111MODULE=on go build -o bin/kubectl-crossplane-trace cmd/trace/main.go
+	GO111MODULE=on go build -o bin/kubectl-crossplane-pack cmd/pack/main.go
 .PHONY: build
 
 test:
@@ -14,6 +15,7 @@ test:
 
 clean:
 	rm -f bin/kubectl-crossplane-trace
+	rm -f bin/kubectl-crossplane-pack
 .PHONY: clean
 
 install:

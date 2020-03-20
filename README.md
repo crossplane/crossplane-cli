@@ -5,7 +5,7 @@
 Here's the one-liner to install latest released version:
 
 ```
-curl -sL https://raw.githubusercontent.com/crossplaneio/crossplane-cli/master/bootstrap.sh | bash
+curl -sL https://raw.githubusercontent.com/crossplane/crossplane-cli/master/bootstrap.sh | bash
 ```
 
 The behavior is customizable via environment variables:
@@ -13,14 +13,14 @@ The behavior is customizable via environment variables:
 ```
 RELEASE=v0.2.0
 PREFIX=${HOME}
-curl -sL https://raw.githubusercontent.com/crossplaneio/crossplane-cli/"${RELEASE}"/bootstrap.sh | env PREFIX=${PREFIX} RELEASE=${RELEASE} bash
+curl -sL https://raw.githubusercontent.com/crossplane/crossplane-cli/"${RELEASE}"/bootstrap.sh | env PREFIX=${PREFIX} RELEASE=${RELEASE} bash
 ```
 
 You can get the latest, bleeding-edge versions of the `stack` commands
 by setting `RELEASE` as `master`.
 
 ```
-RELEASE=master && curl -sL https://raw.githubusercontent.com/crossplaneio/crossplane-cli/"${RELEASE}"/bootstrap.sh | RELEASE=${RELEASE} bash
+RELEASE=master && curl -sL https://raw.githubusercontent.com/crossplane/crossplane-cli/"${RELEASE}"/bootstrap.sh | RELEASE=${RELEASE} bash
 ```
 
 But please note, the `trace` command will not be installed in this case,
@@ -122,7 +122,7 @@ things installed:
 * [kubebuilder, version 2][kubebuilder quick start]
 * [GNU make](https://www.gnu.org/software/make/)
 * bash
-* [crossplane](https://github.com/crossplaneio/crossplane),
+* [crossplane](https://github.com/crossplane/crossplane),
   or your `kubectl` should be set up to talk to a crossplane
   control cluster
 
@@ -156,7 +156,7 @@ Copy the plugins to somewhere on your `PATH`. If you have
 `/usr/local/bin` on your `PATH`, you can do it like this:
 
 ```
-RELEASE=master && curl -sL https://raw.githubusercontent.com/crossplaneio/crossplane-cli/"${RELEASE}"/bootstrap.sh | RELEASE=${RELEASE} bash
+RELEASE=master && curl -sL https://raw.githubusercontent.com/crossplane/crossplane-cli/"${RELEASE}"/bootstrap.sh | RELEASE=${RELEASE} bash
 ```
 
 ## Init project folder
@@ -390,6 +390,6 @@ dependsOn:
 - crd: "kubernetesapplications.workload.crossplane.io/v1alpha1"
 ...
 ```
-For a detailed example, check [this](https://github.com/crossplaneio/sample-stack-wordpress/blob/bf35149b708b3649fb08fcfa89a5f2ddabf02674/config/stack/manifests/app.yaml#L65)
+For a detailed example, check [this](https://github.com/crossplane/sample-stack-wordpress/blob/bf35149b708b3649fb08fcfa89a5f2ddabf02674/config/stack/manifests/app.yaml#L65)
 
 [kubebuilder quick start]: https://book.kubebuilder.io/quick-start.html

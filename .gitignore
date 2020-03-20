@@ -1,5 +1,6 @@
 # binary
 bin/kubectl-crossplane-trace
+bin/kubectl-crossplane-pack
 
 # macOS
 .DS_Store

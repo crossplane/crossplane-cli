@@ -66,29 +66,29 @@ The trace tool categorizes Crossplane resources based on a mapping between resou
 Crossplane resource types. Then it finds the related resources with the help of the references available in the resource
 declarations as shown below. 
 
-- [Kubernetes Application](https://github.com/crossplaneio/crossplane/blob/master/docs/concepts.md#kubernetes-application)
+- [Kubernetes Application](https://github.com/crossplane/crossplane/blob/master/docs/concepts.md#kubernetes-application)
     - `status.clusterRef` -> KubernetesCluster
     - listing/filtering all `KubernetesApplicationResources` and `ResourceClaims` in the same namespace with labels 
   at `spec.resourceSelector.matchLabels`
   
-- [Kubernetes Application Resource](https://github.com/crossplaneio/crossplane/blob/master/docs/concepts.md#crossplane-workloads)
+- [Kubernetes Application Resource](https://github.com/crossplane/crossplane/blob/master/docs/concepts.md#crossplane-workloads)
     - `status.clusterRef` -> KubernetesCluster
-    - `spec.secrets` -> [Connection secrets](https://github.com/crossplaneio/crossplane/blob/master/docs/concepts.md#connection-secrets)
+    - `spec.secrets` -> [Connection secrets](https://github.com/crossplane/crossplane/blob/master/docs/concepts.md#connection-secrets)
    
-- [Resource Claim](https://github.com/crossplaneio/crossplane/blob/master/docs/concepts.md#resource-claim)
+- [Resource Claim](https://github.com/crossplane/crossplane/blob/master/docs/concepts.md#resource-claim)
     - `spec.resourceRef` -> Managed Resource
     - `spec.classRef` -> Resource Class
-    - `spec.writeConnectionSecretToRef` -> [Connection secrets](https://github.com/crossplaneio/crossplane/blob/master/docs/concepts.md#connection-secrets)
+    - `spec.writeConnectionSecretToRef` -> [Connection secrets](https://github.com/crossplane/crossplane/blob/master/docs/concepts.md#connection-secrets)
 
-- [Managed Resource](https://github.com/crossplaneio/crossplane/blob/master/docs/concepts.md#managed-resource)
+- [Managed Resource](https://github.com/crossplane/crossplane/blob/master/docs/concepts.md#managed-resource)
     - `spec.claimRef` -> Resource Claim
     - `spec.classRef` -> Resource Class
-    - `spec.writeConnectionSecretToRef` -> [Connection secrets](https://github.com/crossplaneio/crossplane/blob/master/docs/concepts.md#connection-secrets)
+    - `spec.writeConnectionSecretToRef` -> [Connection secrets](https://github.com/crossplane/crossplane/blob/master/docs/concepts.md#connection-secrets)
   
-- [Resource Class](https://github.com/crossplaneio/crossplane/blob/master/docs/concepts.md#resource-class) 
+- [Resource Class](https://github.com/crossplane/crossplane/blob/master/docs/concepts.md#resource-class) 
     - `specTemplate.providerRef` -> Provider
 
-- [Provider](https://github.com/crossplaneio/crossplane/blob/master/docs/concepts.md#provider)
+- [Provider](https://github.com/crossplane/crossplane/blob/master/docs/concepts.md#provider)
     - `spec.credentialsSecretRef` -> Credentials Secret
     
 Knowing related objects for a given one, the trace tool builds a graph representing the relations. The data of the 
@@ -100,12 +100,12 @@ Text output contains both an overview of all related types indicating [their sta
 - Improve overview of text output to represent the hierarchy
 
 - Support tracing resources referenced with 
-[cross resource referencing](https://github.com/crossplaneio/crossplane/blob/master/design/one-pager-cross-resource-referencing.md).
+[cross resource referencing](https://github.com/crossplane/crossplane/blob/master/design/one-pager-cross-resource-referencing.md).
 
 - Support dynamically defining new resources/relations (via a config file) without rebuilding the binary which can 
 position the tool as a general purpose tracing tool for tracing any Kubernetes Resource. This could make supporting 
-[cross resource referencing](https://github.com/crossplaneio/crossplane/blob/master/design/one-pager-cross-resource-referencing.md)
+[cross resource referencing](https://github.com/crossplane/crossplane/blob/master/design/one-pager-cross-resource-referencing.md)
 much easier.
  
-- Based on the [pattern established for parent child relationships](https://github.com/crossplaneio/crossplane/issues/752), 
+- Based on the [pattern established for parent child relationships](https://github.com/crossplane/crossplane/issues/752), 
 support tracing starting with stack instances.

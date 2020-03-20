@@ -47,6 +47,15 @@ builds:
   goarch:
   - amd64
 
+- id: "pack"
+  main: ./cmd/pack/main.go
+  binary: "bin/kubectl-crossplane-pack"
+  env:
+    - CGO_ENABLED=0
+    - GO111MODULE=on
+  goarch:
+  - amd64
+
 archives:
 -
   # ID of this archive.
@@ -56,6 +65,7 @@ archives:
   # Builds reference which build instances should be archived in this archive.
   builds:
   - trace
+  - pack
 
   # Archive name template.
   # Defaults:
