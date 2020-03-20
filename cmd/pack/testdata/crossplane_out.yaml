@@ -13,7 +13,7 @@ spec:
       creationTimestamp: null
       labels:
         crossplane-pack: crossplane-install
-      name: crossplane-install-local-crossplane-serviceaccount
+      name: crossplane-install-crossplane-serviceaccount
     spec:
       template:
         apiVersion: v1
