@@ -1,0 +1,48 @@
+#!/usr/bin/env bash
+
+set -e
+
+function usage {
+  echo "Usage: kubectl crossplane registry [-h|--help] [COMMAND]... [OPTION]... [ARGUMENT]..." >&2
+  echo "" >&2
+  echo "Commands:" >&2
+  echo "  login" >&2
+  echo "" >&2
+  echo "-h, --help: Print usage" >&2
+  echo "" >&2
+}
+
+POSITIONAL=()
+
+while [[ $# -gt 0 ]]; do
+  opt="$1"
+
+  case $opt in
+    -h|--help)
+      usage
+      exit 1
+      ;;
+    -*)
+      echo "Unknown argument: $opt" >&2
+      usage
+      exit 1
+      ;;
+    *)
+      POSITIONAL+=("$1")
+      shift
+      ;;
+  esac
+done
+
+if [ "${#POSITIONAL[@]}" -eq "0" ]; then
+  echo "Missing arguments" >&2
+  usage
+  exit 1
+fi
+
+if [[ $# -gt 0 ]] ; then
+  echo "Unknown command: $1" >&2
+fi
+
+usage
+exit 1

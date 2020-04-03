@@ -1,0 +1,79 @@
+#!/usr/bin/env bash
+
+set -e
+
+function usage {
+  echo "Usage: kubectl crossplane registry login [-h|--help] SERVER [ARGS]..." >&2
+  echo "" >&2
+  echo "SERVER is the image registry server where the provided credentials will be authenticated." >&2
+  echo "" >&2
+  echo "ARGS are additional parameters to pass through to 'docker login'." >&2
+  echo "  -p, --password string   Password" >&2
+  echo "      --password-stdin    Take the password from stdin" >&2
+  echo "  -u, --username string   Username" >&2
+  echo "" >&2
+  echo "Examples:" >&2
+  echo "" >&2
+  echo "Login to the Upbound registry:" >&2
+  echo "kubectl crossplane registry login registry.upbound.io" >&2
+  echo "" >&2
+  echo "-h, --help: Print usage" >&2
+  echo "" >&2
+}
+
+POSITIONAL=()
+ARGS=()
+
+while [[ $# -gt 0 ]]; do
+  opt="$1"
+
+  case $opt in
+    -h|--help)
+      usage
+      exit 1
+      ;;
+    -p|--password)
+      if [ -z "$2" ]; then
+        echo "Missing password" >&2
+        usage
+        exit 1
+      fi
+      ARGS+=("$1" "$2")
+      shift
+      shift
+      ;;
+    -u|--username)
+      if [ -z "$2" ]; then
+        echo "Missing username" >&2
+        usage
+        exit 1
+      fi
+      ARGS+=("$1" "$2")
+      shift
+      shift
+      ;;
+    -*)
+      # pass-through any --key=value or arguments without values
+      ARGS+=("$1")
+      shift
+      ;;
+    *)
+      POSITIONAL+=("$1")
+      shift
+      ;;
+  esac
+done
+
+if [ "${#POSITIONAL[@]}" -eq "0" ]; then
+  echo "Missing registry argument" >&2
+  usage
+  exit 1
+fi
+
+# Reset the positional parameters ($1, ..) from the array of arguments
+# that didn't match our known options
+set -- "${POSITIONAL[@]}"
+
+SERVER="$1"
+
+docker login "$SERVER" "${ARGS[@]}"
