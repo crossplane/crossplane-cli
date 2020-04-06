@@ -166,27 +166,18 @@ function check_for_existing_stack {
 function create_build {
   cat > stack.Dockerfile <<'EOF'
 # Build the manager binary
-FROM golang:1.12.5 as builder
-
+FROM golang:1.13.6 as builder
 WORKDIR /workspace
-# Copy the Go Modules manifests
-COPY go.mod go.mod
-COPY go.sum go.sum
+COPY . .
 # cache deps before building and copying source so that we don't need to re-download as much
 # and so that source changes don't invalidate our downloaded layer
 RUN go mod download
-
-# Copy the go source
-COPY main.go main.go
-COPY api/ api/
-COPY controllers/ controllers/
-
 # Build
 RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 GO111MODULE=on go build -a -o manager main.go
 
 # Use alpine as a minimal base image to package the manager binary
 # Alpine is used instead of distroless because the stack manager expects things like `cp` to exist
-FROM alpine:3.7
+FROM alpine:3.11
 WORKDIR /
 COPY stack-package /
 COPY --from=builder /workspace/manager .
@@ -337,17 +328,21 @@ EOF
   echo 'Created stack.Makefile' >&2
 
 
-  if [ -f .gitignore ] ; then
-    grep -q 'stack-package/' .gitignore || cat >>.gitignore <<EOF
+  grep -q 'stack-package/' .gitignore > /dev/null 2>&1 || cat >>.gitignore <<EOF
 
 # stack-package is a generated folder, and can be considered an intermediate
 # build artifact. We don't need to check it into version control.
 stack-package/
 EOF
-    echo 'Made sure stack-package/ is in .gitignore' >&2
-  else
-    echo 'No .gitignore found; not adding stack-package/ to .gitignore' >&2
-  fi
+  echo 'Made sure stack-package/ is in .gitignore' >&2
+
+  grep -q '.git/' .dockerignore > /dev/null 2>&1 || cat >>.dockerignore <<EOF
+
+# we don't want to copy .git folder during the build since it can be quite big
+# regardless of the file size of the repo.
+.git/
+EOF
+  echo 'Made sure .git/ is in .dockerignore' >&2
 }
 
 cd -- "${INIT_DIR}"
