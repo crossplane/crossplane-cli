@@ -21,6 +21,7 @@ import (
 	"io"
 	"math/rand"
 	"os"
+	"time"
 
 	"github.com/spf13/pflag"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -40,6 +41,7 @@ type packOptions struct {
 var pOpts = &packOptions{}
 
 func init() {
+	rand.Seed(time.Now().UnixNano())
 	pflag.BoolVarP(&pOpts.help, "help", "h", false, "Shows this help message")
 	pflag.StringVarP(&pOpts.useFile, "file", "f", "", "Specifies file path to read from")
 	pflag.StringVar(&pOpts.name, "name", fmt.Sprintf("app-%s", fmt.Sprint(rand.Intn(50000))), "Name")
