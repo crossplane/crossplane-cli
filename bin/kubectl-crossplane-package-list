@@ -3,16 +3,16 @@
 set -e
 
 function usage {
-  # The reason for putting stack name before stack image source is it seems like stack name
+  # The reason for putting package name before package image source is it seems like package name
   # would be overridden more often than stack image source, but I kept going back and
   # forth on that originally. Overriding the source is very useful when developing a
-  # stack locally, for example.
-  echo "Usage: kubectl crossplane stack list [-h|--help] [OPTIONS]" >&2
+  # package locally, for example.
+  echo "Usage: kubectl crossplane package list [-h|--help] [OPTIONS]" >&2
   echo "" >&2
-  echo "Lists installed stacks. If any OPTIONS are provided, they will be passed" >&2
+  echo "Lists installed packages. If any OPTIONS are provided, they will be passed" >&2
   echo "through to kubectl." >&2
   echo "" >&2
-  echo "If no OPTIONS are provided, stacks in all namespaces will be listed." >&2
+  echo "If no OPTIONS are provided, packages in all namespaces will be listed." >&2
   echo "" >&2
   echo "-h, --help: Print usage" >&2
 }

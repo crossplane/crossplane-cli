@@ -6,7 +6,7 @@ function usage {
   echo "Usage: kubectl crossplane [-h|--help] [COMMAND]... [OPTION]... [ARGUMENT]..." >&2
   echo "" >&2
   echo "Commands:" >&2
-  echo "  stack" >&2
+  echo "  package" >&2
   echo "  trace" >&2
   echo "  registry" >&2
   echo "" >&2

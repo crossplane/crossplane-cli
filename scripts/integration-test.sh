@@ -17,14 +17,14 @@ cd "${TEST_DIR}"
 GO111MODULE=on kubebuilder init --domain helloworld.stacks.crossplane.io
 yes | GO111MODULE=on kubebuilder create api --group samples --version v1alpha1 --kind HelloWorld
 
-kubectl crossplane stack init --cluster 'crossplane-examples/hello-world'
+kubectl crossplane package init --cluster 'crossplane-examples/hello-world'
 
 sed -i'.bak' -e 's/\/\/ your logic here/r.Log.V(0).Info("Hello World!", "instance", req.NamespacedName)/' controllers/helloworld_controller.go
 rm -f controllers/helloworld_controller.go.bak
 
 GO111MODULE=on make manager manifests
-kubectl crossplane stack build local-build
-kubectl crossplane stack install --cluster 'crossplane-examples/hello-world' 'crossplane-examples-hello-world' localhost:5000
+kubectl crossplane package build local-build
+kubectl crossplane package install --cluster 'crossplane-examples/hello-world' 'crossplane-examples-hello-world' localhost:5000
 
 finished='false'
 set +e
