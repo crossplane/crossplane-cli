@@ -76,6 +76,12 @@ kubectl crossplane package list
 kubectl crossplane package uninstall 'myname-mysubname'
 ```
 
+### Registry commands
+
+```
+kubectl crossplane registry login 'registry.upbound.io'
+```
+
 ### Trace command
 
 Trace command aims to ease debugging and troubleshooting process by providing a holistic view for a particular object.
