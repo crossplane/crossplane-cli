@@ -51,7 +51,7 @@ Or, if you customized the installation prefix:
 
 ```
 PREFIX=/thing
-rm "${PREFIX}"/bin/kubectl-crossplane-package-*
+rm "${PREFIX}"/bin/kubectl-crossplane-*
 ```
 
 ### Uninstalling from source
@@ -80,6 +80,21 @@ kubectl crossplane package uninstall 'myname-mysubname'
 
 ```
 kubectl crossplane registry login 'registry.upbound.io'
+```
+
+### Pack command
+
+The `pack` command wraps Kubernetes manifests in a `KubernetesApplication` so
+that they can easily be deployed to remote clusters.
+
+Examples:
+
+```
+# Wrap helm chart output in KubernetesApplication
+helm template crossplane -n crossplane-system crossplane/crossplane-alpha | kubectl crossplane pack -
+
+# Wrap manifests in file in KubernetesApplication
+kubectl crossplane pack -f ./deployment/mycoolconfig.yaml
 ```
 
 ### Trace command
