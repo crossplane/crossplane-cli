@@ -16,7 +16,7 @@ PREFIX=${HOME}
 curl -sL https://raw.githubusercontent.com/crossplane/crossplane-cli/"${RELEASE}"/bootstrap.sh | env PREFIX=${PREFIX} RELEASE=${RELEASE} bash
 ```
 
-You can get the latest, bleeding-edge versions of the `stack` commands
+You can get the latest, bleeding-edge versions of the `package` commands
 by setting `RELEASE` as `master`.
 
 ```
@@ -51,7 +51,7 @@ Or, if you customized the installation prefix:
 
 ```
 PREFIX=/thing
-rm "${PREFIX}"/bin/kubectl-crossplane-stack-*
+rm "${PREFIX}"/bin/kubectl-crossplane-*
 ```
 
 ### Uninstalling from source
@@ -64,16 +64,37 @@ make uninstall
 
 ## Usage
 
-### Stack commands
+### Package commands
 
 ```
-kubectl crossplane stack init 'myname/mysubname'
-kubectl crossplane stack build
-kubectl crossplane stack publish
-kubectl crossplane stack install 'myname/mysubname'
-kubectl crossplane stack generate-install 'myname/mysubname' | kubectl apply --namespace mynamespace -f -
-kubectl crossplane stack list
-kubectl crossplane stack uninstall 'myname-mysubname'
+kubectl crossplane package init 'myname/mysubname'
+kubectl crossplane package build
+kubectl crossplane package publish
+kubectl crossplane package install 'myname/mysubname'
+kubectl crossplane package generate-install 'myname/mysubname' | kubectl apply --namespace mynamespace -f -
+kubectl crossplane package list
+kubectl crossplane package uninstall 'myname-mysubname'
+```
+
+### Registry commands
+
+```
+kubectl crossplane registry login 'registry.upbound.io'
+```
+
+### Pack command
+
+The `pack` command wraps Kubernetes manifests in a `KubernetesApplication` so
+that they can easily be deployed to remote clusters.
+
+Examples:
+
+```
+# Wrap helm chart output in KubernetesApplication
+helm template crossplane -n crossplane-system crossplane/crossplane-alpha | kubectl crossplane pack -
+
+# Wrap manifests in file in KubernetesApplication
+kubectl crossplane pack -f ./deployment/mycoolconfig.yaml
 ```
 
 ### Trace command
@@ -100,10 +121,10 @@ kubectl crossplane trace KubernetesApplication wordpress-app-83f04457-0b1b-4532-
 
 For more information, see [the trace command documentation](docs/trace-command.md).
 
-# Quick Start: Stacks
+# Quick Start: Packages
 
-This guide will show you the basics for using the Stacks CLI to create
-and develop a stack with a basic controller that responds to a certain
+This guide will show you the basics for using the Packages CLI to create
+and develop a package with a basic controller that responds to a certain
 type of object.
 
 This guide uses [kubebuilder version 2][kubebuilder quick start], but
@@ -113,7 +134,7 @@ Excluding installing prerequisites, it'll take about 5 minutes!
 
 ## Install prerequisites
 
-The workflow for working with a stack assumes that you have a few
+The workflow for working with a package assumes that you have a few
 things installed:
 
 * [go](https://golang.org/doc/install)
@@ -198,16 +219,16 @@ Next, create an API using `kubebuilder`:
 yes y | GO111MODULE=on kubebuilder create api --group samples --version v1alpha1 --kind HelloWorld
 ```
 
-## Initialize the stack project
+## Initialize the package project
 
 Once the project is initialized as a kubebuilder project and the plugins
-are installed, we can initialize the project as a stack project using
-the `crossplane stack init` command.
+are installed, we can initialize the project as a package project using
+the `crossplane package init` command.
 
 From within the project directory:
 
 ```
-kubectl crossplane stack init --cluster 'crossplane-examples/hello-world'
+kubectl crossplane package init --cluster 'crossplane-examples/hello-world'
 ```
 
 ## Set up the Hello World
@@ -230,13 +251,13 @@ First, we'll want to build the binaries and yamls in the regular way.
 GO111MODULE=on make manager manifests
 ```
 
-## Validate the stack locally
+## Validate the package locally
 
-During development, we'll often be building and testing our stack
+During development, we'll often be building and testing our package
 locally. The local validation section shows us how we would do that.
 
 These local scenarios will attempt to run a local Docker registry in your Kubernetes cluster to help
-with publishing your Stack image for local testing scenarios.  This local validation flow has been
+with publishing your Package image for local testing scenarios.  This local validation flow has been
 tested and verified with the following software:
 
 * Docker Desktop `2.2.0.0` with Kubernetes `v1.15.5` enabled
@@ -244,38 +265,38 @@ tested and verified with the following software:
   [installed](https://crossplane.io/docs/master/install-crossplane.html#installation) into Docker
   Desktop's Kubernetes cluster
 
-### Build stack and publish locally
+### Build package and publish locally
 
 Once the (kubebuilder) project is built in the normal way, we want to
-bundle it all into a stack and publish the image locally:
+bundle it all into a package and publish the image locally:
 
 ```
-kubectl crossplane stack build local-build
+kubectl crossplane package build local-build
 ```
 
-### Install stack locally
+### Install package locally
 
-When the stack is built, the next step is to install it into our
+When the package is built, the next step is to install it into our
 Crossplane:
 
 ```
-kubectl crossplane stack install --cluster 'crossplane-examples/hello-world' 'crossplane-examples-hello-world' localhost:5000
+kubectl crossplane package install --cluster 'crossplane-examples/hello-world' 'crossplane-examples-hello-world' localhost:5000
 ```
 
-This can also be done using the sample local stack install that the
+This can also be done using the sample local package install that the
 `init` command generates, but it's a good habit to use the `install`
 command.
 
-### Create an object for the stack to manage
+### Create an object for the package to manage
 
-Once the stack is installed into our Crossplane, we can use one of the
-sample objects to create an object that the stack will respond to.
+Once the package is installed into our Crossplane, we can use one of the
+sample objects to create an object that the package will respond to.
 
 ```
 kubectl apply -f config/samples/*.yaml
 ```
 
-### Check the stack's output
+### Check the package's output
 
 Once the object has been created, we expect the controller to do
 something in response! In our case, we expect it to log a message.
@@ -292,74 +313,74 @@ $ kubectl logs crossplane-examples-hello-world-65d5c59976-vzppd | grep 'Hello Wo
 ```
 
 That's it! We've finished writing, building, and locally validating a
-stack!
+package!
 
 
-### Remove the stack
+### Remove the package
 
-When we're done with the stack and want to remove it and all its
+When we're done with the package and want to remove it and all its
 resources, we can `uninstall` it by name:
 
 ```
-kubectl crossplane stack uninstall --cluster 'crossplane-examples-hello-world'
+kubectl crossplane package uninstall --cluster 'crossplane-examples-hello-world'
 ```
 
 ## How to build for external publishing
 
-After we finish developing a stack locally, we may want to publish it to
+After we finish developing a package locally, we may want to publish it to
 an external registry. This section shows the commands to do that.
 
-### Build stack
+### Build package
 
-To build the stack, we use the `build` subcommand once the binaries and
+To build the package, we use the `build` subcommand once the binaries and
 generated yamls have been built:
 
 ```
-kubectl crossplane stack build
+kubectl crossplane package build
 ```
 
 ### Run publish
 
-Once the stack is built, we can use the `publish` subcommand to publish
+Once the package is built, we can use the `publish` subcommand to publish
 it to the registry:
 
 ```
 # You may need to log into dockerhub or the docker registry that the
 # image is being pushed to. If that's the case, run:
 # $ docker login
-kubectl crossplane stack publish
+kubectl crossplane package publish
 ```
 
 ### Install
 
-Installing the stack can be done with a sample which was generated for
+Installing the package can be done with a sample which was generated for
 us by the `init` that we ran earlier, but it's a little easier to use
 the `install` command:
 
 ```
-kubectl crossplane stack install --cluster 'crossplane-examples/hello-world'
+kubectl crossplane package install --cluster 'crossplane-examples/hello-world'
 ```
 
 ### Uninstall
 
-Installing the stack can be done with some sample yaml which was
+Installing the package can be done with some sample yaml which was
 generated for us by the `init` that we ran earlier, but it's a
 little easier to use the `uninstall` command:
 
 ```
-kubectl crossplane stack uninstall --cluster 'crossplane-examples-hello-world'
+kubectl crossplane package uninstall --cluster 'crossplane-examples-hello-world'
 ```
 
-Note that `uninstall` uses the stack's name (which has no `/` characters),
+Note that `uninstall` uses the package's name (which has no `/` characters),
 while the `install` uses the image name (which uses `/`).
 
 # Recipes
 
-### Use a different image name when building and testing a stack locally
+### Use a different image name when building and testing a package locally
 
 ```
-STACK_IMG=myprefix/myothername kubectl crossplane stack build
-STACK_IMG=myprefix/myothername kubectl crossplane stack publish
+PACKAGE_IMG=myprefix/myothername kubectl crossplane package build
+PACKAGE_IMG=myprefix/myothername kubectl crossplane package publish
 ```
 
 ### Build locally with an overridden install.yaml
@@ -367,21 +388,21 @@ STACK_IMG=myprefix/myothername kubectl crossplane stack publish
 We can specify a different build target to run:
 
 ```
-kubectl crossplane stack build local-build
+kubectl crossplane package build local-build
 ```
-See the `config/stack/overrides` directory for details about where the
-overrides live. See the `stack.Makefile` for details about how
+See the `config/package/overrides` directory for details about where the
+overrides live. See the `package.Makefile` for details about how
 `local-build` works.
 
 ### Setup RBAC
 
 We can setup extra permissions to grant access to the resources which
-are not part of our stack. This can be done by specifying the permissions in the stack definition YAML..
+are not part of our package. This can be done by specifying the permissions in the package definition YAML..
 ```
 # Human readable title of application.
-title: Sample Wordpress Stack
+title: Sample Wordpress App
 ...
-# RBAC Roles will be generated permitting this stack to use all verbs on all
+# RBAC Roles will be generated permitting this package to use all verbs on all
 # resources in the groups listed below.
 permissionScope: Namespaced
 dependsOn:
@@ -390,6 +411,6 @@ dependsOn:
 - crd: "kubernetesapplications.workload.crossplane.io/v1alpha1"
 ...
 ```
-For a detailed example, check [this](https://github.com/crossplane/sample-stack-wordpress/blob/bf35149b708b3649fb08fcfa89a5f2ddabf02674/config/stack/manifests/app.yaml#L65)
+For a detailed example, see [here](https://github.com/crossplane/app-wordpress/blob/37443b45f40b73958bfd804f98a2a93ba50d8590/.registry/app.yaml#L60).
 
 [kubebuilder quick start]: https://book.kubebuilder.io/quick-start.html

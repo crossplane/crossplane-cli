@@ -3,13 +3,13 @@
 set -e
 
 function usage {
-  echo "Usage: kubectl crossplane stack uninstall [-h|--help] [-c|--cluster] STACK_NAME [options ...]" >&2
+  echo "Usage: kubectl crossplane package uninstall [-h|--help] [-c|--cluster] PACKAGE_NAME [options ...]" >&2
   echo "" >&2
-  echo "STACK_NAME is the name of the stack to uninstall." >&2
+  echo "PACKAGE_NAME is the name of the package to uninstall." >&2
   echo 'Namespace can also be passed, using the same syntax as a `kubectl delete` command.' >&2
   echo "" >&2
   echo "-h, --help: Print usage" >&2
-  echo "-c, --cluster: Uninstall a Cluster scoped stack" >&2
+  echo "-c, --cluster: Uninstall a Cluster scoped package" >&2
 }
 
 function check_help {
@@ -34,7 +34,7 @@ else
   CLUSTER_STACK=""
 fi
 
-STACK_NAME="${1}"
+PACKAGE_NAME="${1}"
 shift
 
-kubectl delete "${CLUSTER_STACK}"stackinstall "${STACK_NAME}" "$@"
+kubectl delete "${CLUSTER_STACK}"stackinstall "${PACKAGE_NAME}" "$@"

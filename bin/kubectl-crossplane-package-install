@@ -3,21 +3,21 @@
 set -e
 
 function usage {
-  # The reason for putting stack name before stack image source is it seems like stack name
-  # would be overridden more often than stack image source, but I kept going back and
+  # The reason for putting package name before package image source is it seems like package name
+  # would be overridden more often than package image source, but I kept going back and
   # forth on that originally. Overriding the source is very useful when developing a
-  # stack locally, for example.
-  echo "Usage: kubectl crossplane stack install [-h|--help] [-c|--cluster] [-n|--namespace NAMESPACE] STACK_IMAGE_NAME [STACK_NAME [STACK_IMAGE_SOURCE]]" >&2
+  # package locally, for example.
+  echo "Usage: kubectl crossplane package install [-h|--help] [-c|--cluster] [-n|--namespace NAMESPACE] PACKAGE_IMAGE_NAME [PACKAGE_NAME [PACKAGE_IMAGE_SOURCE]]" >&2
   echo "" >&2
-  echo "STACK_IMAGE_NAME is the name of the stack in the registry to install." >&2
-  echo "If the STACK_NAME is not provided, the stack name will be the STACK_IMAGE_NAME with any '/' characters" >&2
+  echo "PACKAGE_IMAGE_NAME is the name of the package in the registry to install." >&2
+  echo "If the PACKAGE_NAME is not provided, the package name will be the PACKAGE_IMAGE_NAME with any '/' characters" >&2
   echo "converted to '-' characters." >&2
   echo "" >&2
   echo "-h, --help: Print usage" >&2
-  echo "-c, --cluster: Install a Cluster scoped stack" >&2
+  echo "-c, --cluster: Install a Cluster scoped package" >&2
   echo "-n, --namespace: Install into the given namespace" >&2
   echo "" >&2
-  echo 'For more advanced usage, see the lower-level `kubectl crossplane stack generate-install` command.' >&2
+  echo 'For more advanced usage, see the lower-level `kubectl crossplane package generate-install` command.' >&2
 }
 
 CLUSTER_STACK=""
@@ -71,18 +71,18 @@ fi
 # that didn't match our known options
 set -- "${POSITIONAL[@]}"
 
-STACK_IMAGE_NAME="${1}"
+PACKAGE_IMAGE_NAME="${1}"
 # For kubernetes fields, we aren't able to use slashes, and
 # slashes are common for docker image names. So we remove the
 # slashes before we use the name for kubernetes resource fields.
 # We also can't use colons and don't want to include tags in the name.
-KUBEY_STACK_IMAGE_NAME=$( echo "${STACK_IMAGE_NAME}" | tr '/' '-' | sed 's/:.*//' )
-# Defaults to the kubey stack image name, but can be overridden
+KUBEY_PACKAGE_IMAGE_NAME=$( echo "${PACKAGE_IMAGE_NAME}" | tr '/' '-' | sed 's/:.*//' )
+# Defaults to the kubey package image name, but can be overridden
 # by passing arguments
-STACK_NAME="${2:-${KUBEY_STACK_IMAGE_NAME}}"
+PACKAGE_NAME="${2:-${KUBEY_PACKAGE_IMAGE_NAME}}"
 
-kubectl crossplane stack generate-install ${CLUSTER_OPT} "$@" | kubectl apply ${NAMESPACE_OPT} -f -
+kubectl crossplane package generate-install ${CLUSTER_OPT} "$@" | kubectl apply ${NAMESPACE_OPT} -f -
 # Printing out the stack install object from the cluster may be useful
 # for whoever ran this command, and there's no other output anyway, so
 # we might as well.
-kubectl get ${NAMESPACE_OPT} -o yaml "${CLUSTER_STACK}"stackinstall "${STACK_NAME}"
+kubectl get ${NAMESPACE_OPT} -o yaml "${CLUSTER_STACK}"stackinstall "${PACKAGE_NAME}"

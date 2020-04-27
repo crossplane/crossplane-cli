@@ -1,0 +1,51 @@
+#!/usr/bin/env bash
+
+function usage {
+  echo "Usage: kubectl crossplane package [-h|--help] build [PACKAGE_IMAGE_NAME] [ARGS ...]" >&2
+  echo "" >&2
+  echo "" >&2
+  echo "PACKAGE_IMAGE_NAME is the name that will be given to the built image." >&2
+  echo "Like any image name in the local docker registry, this may start">&2
+  echo "with a server address and end with a tag. If unspecified," >&2
+  echo "it will use whatever name the project was initialized with." >&2
+  echo "" >&2
+  echo 'ARGS are other arguments to pass through to `make build`.' >&2
+  echo "" >&2
+  echo "Examples:" >&2
+  echo "" >&2
+  echo "Build a package and tag it with the default image name:" >&2
+  echo "kubectl crossplane package build" >&2
+  echo "" >&2
+  echo "Build a package and tag it for publishing to a local registry:" >&2
+  echo "kubectl crossplane package build localhost:5000/mypackagerepository/mypackageimagename" >&2
+  echo "" >&2
+  echo "Build a package and tag it for publishing to a public registry:" >&2
+  echo "kubectl crossplane package build registry.upbound.io/username/repo-name:v0.0.1" >&2
+  echo "" >&2
+  echo "-h, --help: Print usage" >&2
+}
+
+function check_help {
+  if [ "${1}" == "-h" -o "${1}" == "--help" ] ; then
+    usage
+    exit 1
+  fi
+}
+
+check_help "${1}"
+
+PACKAGE_IMG=${1}
+shift
+
+# Shift returns non-zero if there are no arguments left,
+# so we wait until after `shift` to set -e
+set -e
+set -x
+
+# If package.Makefile exists, we want to use that. Otherwise,
+# we'll use a regular Makefile.
+if [[ -e package.Makefile ]]; then
+  make -f package.Makefile build ${PACKAGE_IMG:+"PACKAGE_IMG=$PACKAGE_IMG"} "$@"
+else
+  make build ${PACKAGE_IMG:+"PACKAGE_IMG=$PACKAGE_IMG"} "$@"
+fi

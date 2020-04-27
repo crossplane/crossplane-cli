@@ -3,15 +3,15 @@
 set -e
 
 function usage {
-  echo "Usage: kubectl crossplane stack init [-h|--help] [-f|--force] [-c|--cluster] STACK_NAME [DIRECTORY]" >&2
+  echo "Usage: kubectl crossplane package init [-h|--help] [-f|--force] [-c|--cluster] PACKAGE_NAME [DIRECTORY]" >&2
   echo "" >&2
-  echo "STACK_NAME is used as the image name for the stack, and any '/' characters" >&2
+  echo "PACKAGE_NAME is used as the image name for the package, and any '/' characters" >&2
   echo "are converted to '-' characters when populating kubernetes resource field names." >&2
   echo "" >&2
   echo "DIRECTORY defaults to the current directory." >&2
   echo "" >&2
-  echo "-f, --force: force init when a previous 'stack init' is detected" >&2
-  echo "-c, --cluster: use the Cluster Stack permission scope and generate ClusterStackInstall examples" >&2
+  echo "-f, --force: force init when a previous 'package init' is detected" >&2
+  echo "-c, --cluster: use the Cluster Package permission scope and generate ClusterStackInstall examples" >&2
   echo "-h, --help: Print usage" >&2
 }
 
@@ -39,31 +39,31 @@ fi
 CLUSTER_OPT=${1}
 if [ "${CLUSTER_OPT}" == "-c" -o "${CLUSTER_OPT}" == "--cluster" ]; then
   CLUSTER_STACK="Cluster"
-  STACK_SCOPE="Cluster"
+  PACKAGE_SCOPE="Cluster"
   shift
 else
   CLUSTER_STACK=""
-  STACK_SCOPE="Namespaced"
+  PACKAGE_SCOPE="Namespaced"
 fi
 
-STACK_NAME=${1}
+PACKAGE_NAME=${1}
 # For kubernetes fields, we aren't able to use slashes, and
 # slashes are common for docker image names. So we remove the
 # slashes before we use the name for kubernetes resource fields.
-KUBEY_STACK_NAME=$( echo "${STACK_NAME}" | tr '/' '-' )
+KUBEY_PACKAGE_NAME=$( echo "${PACKAGE_NAME}" | tr '/' '-' )
 # This is mostly for code clarity, but it's possible that the
-# image name won't be the passed-in stack name in the future.
-STACK_IMAGE_NAME=${STACK_NAME}
+# image name won't be the passed-in package name in the future.
+PACKAGE_IMAGE_NAME=${PACKAGE_NAME}
 INIT_DIR=${2:-$PWD}
 
 function create_dirs {
-  mkdir -p config/stack
+  mkdir -p config/package
 }
 
 function create_manifest {
-  mkdir -p config/stack/manifests
-  touch config/stack/manifests/app.yaml
-  cat > config/stack/manifests/app.yaml <<EOF
+  mkdir -p config/package/manifests
+  touch config/package/manifests/app.yaml
+  cat > config/package/manifests/app.yaml <<EOF
 title: ""
 readme: ""
 overview: ""
@@ -82,40 +82,40 @@ keywords:
  - "crossplane-cli"
 website: ""
 source: ""
-permissionScope: ${STACK_SCOPE}
+permissionScope: ${PACKAGE_SCOPE}
 # License SPDX name: https://spdx.org/licenses/
 license: Apache-2.0
 EOF
 
-  echo 'Created config/stack/manifests/app.yaml' >&2
+  echo 'Created config/package/manifests/app.yaml' >&2
 
-  touch config/stack/manifests/install.yaml
-  cat > config/stack/manifests/install.yaml <<EOF
+  touch config/package/manifests/install.yaml
+  cat > config/package/manifests/install.yaml <<EOF
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: "${KUBEY_STACK_NAME}"
+  name: "${KUBEY_PACKAGE_NAME}"
   labels:
-    core.crossplane.io/name: "${KUBEY_STACK_NAME}"
+    core.crossplane.io/name: "${KUBEY_PACKAGE_NAME}"
 spec:
   selector:
     matchLabels:
-      core.crossplane.io/name: "${KUBEY_STACK_NAME}"
+      core.crossplane.io/name: "${KUBEY_PACKAGE_NAME}"
   replicas: 1
   template:
     metadata:
-      name: "${KUBEY_STACK_NAME}-controller"
+      name: "${KUBEY_PACKAGE_NAME}-controller"
       labels:
-        core.crossplane.io/name: "${KUBEY_STACK_NAME}"
+        core.crossplane.io/name: "${KUBEY_PACKAGE_NAME}"
     spec:
       containers:
-      - name: "${KUBEY_STACK_NAME}-controller"
+      - name: "${KUBEY_PACKAGE_NAME}-controller"
         # The `image:` field is optional. If omitted, it will be
         # filled in by the stack manager, using the same image
         # name and tag as the package on the StackInstall object.
         # We recommend omitting it unless you know you need it.
         #
-        # image: "${STACK_IMAGE_NAME}"
+        # image: "${PACKAGE_IMAGE_NAME}"
         env:
         - name: POD_NAME
           valueFrom:
@@ -126,45 +126,45 @@ spec:
             fieldRef:
               fieldPath: metadata.namespace
 EOF
-  echo 'Created config/stack/manifests/install.yaml' >&2
+  echo 'Created config/package/manifests/install.yaml' >&2
 }
 
 function create_samples {
-  mkdir -p config/stack/samples
-  cat > config/stack/samples/local.install.stack.yaml <<EOF
+  mkdir -p config/package/samples
+  cat > config/package/samples/local.install.stack.yaml <<EOF
 ---
 apiVersion: stacks.crossplane.io/v1alpha1
 kind: ${CLUSTER_STACK}StackInstall
 metadata:
-  name: "${KUBEY_STACK_NAME}"
+  name: "${KUBEY_PACKAGE_NAME}"
 spec:
   source: localhost:5000
-  package: "${STACK_IMAGE_NAME}"
+  package: "${PACKAGE_IMAGE_NAME}"
 EOF
-  echo 'Created config/stack/samples/local.install.stack.yaml' >&2
+  echo 'Created config/package/samples/local.install.stack.yaml' >&2
 
-  cat > config/stack/samples/install.stack.yaml <<EOF
+  cat > config/package/samples/install.stack.yaml <<EOF
 ---
 apiVersion: stacks.crossplane.io/v1alpha1
 kind: ${CLUSTER_STACK}StackInstall
 metadata:
-  name: "${KUBEY_STACK_NAME}"
+  name: "${KUBEY_PACKAGE_NAME}"
 spec:
-  package: "${STACK_IMAGE_NAME}"
+  package: "${PACKAGE_IMAGE_NAME}"
 EOF
-  echo 'Created config/stack/samples/install.stack.yaml' >&2
+  echo 'Created config/package/samples/install.stack.yaml' >&2
 
 }
 
-function check_for_existing_stack {
-  if [ -f "${INIT_DIR}/stack.env" -a -z "${FORCE_INIT}" ]; then
-    echo "Error: ${INIT_DIR}/stack.env already exists.  Use -f or --force to force init." >&2
+function check_for_existing_package {
+  if [ -f "${INIT_DIR}/package.env" -a -z "${FORCE_INIT}" ]; then
+    echo "Error: ${INIT_DIR}/package.env already exists.  Use -f or --force to force init." >&2
     return 1
   fi
 }
 
 function create_build {
-  cat > stack.Dockerfile <<'EOF'
+  cat > package.Dockerfile <<'EOF'
 # Build the manager binary
 FROM golang:1.12.5 as builder
 
@@ -188,25 +188,25 @@ RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 GO111MODULE=on go build -a -o manager 
 # Alpine is used instead of distroless because the stack manager expects things like `cp` to exist
 FROM alpine:3.7
 WORKDIR /
-COPY stack-package /
+COPY package /
 COPY --from=builder /workspace/manager .
 ENTRYPOINT ["/manager"]
 EOF
-  echo 'Created stack.Dockerfile' >&2
+  echo 'Created package.Dockerfile' >&2
 
-  cat > stack.env <<EOF
+  cat > package.env <<EOF
 # Image URL to use all building/pushing image targets
-STACK_IMG ?= ${STACK_NAME}:latest
+PACKAGE_IMG ?= ${PACKAGE_NAME}:latest
 
 CRD_DIR ?= config/crd/bases
-STACK_PACKAGE_REGISTRY_SOURCE ?= config/stack/manifests
-LOCAL_OVERRIDES_DIR ?= config/stack/overrides
-CONFIG_SAMPLES_DIR ?= config/stack/samples
+PACKAGE_REGISTRY_SOURCE ?= config/package/manifests
+LOCAL_OVERRIDES_DIR ?= config/package/overrides
+CONFIG_SAMPLES_DIR ?= config/package/samples
 EOF
-  echo 'Created stack.env' >&2
+  echo 'Created package.env' >&2
 
-  cat > stack.Makefile <<'EOF'
-include stack.env
+  cat > package.Makefile <<'EOF'
+include package.env
 
 GO111MODULE ?= on
 export GO111MODULE
@@ -219,18 +219,18 @@ GOBIN=$(shell go env GOBIN)
 endif
 
 
-STACK_PACKAGE=stack-package
-STACK_PACKAGE_REGISTRY=$(STACK_PACKAGE)/.registry
+PACKAGE=package
+PACKAGE_REGISTRY=$(PACKAGE)/.registry
 
 all: build
 .PHONY: all
 
-clean: clean-stack-package clean-binary
+clean: clean-package clean-binary
 .PHONY: clean
 
-clean-stack-package:
-	rm -r $(STACK_PACKAGE)
-.PHONY: clean-stack-package
+clean-package:
+	rm -r $(PACKAGE)
+.PHONY: clean-package
 
 clean-binary:
 	rm -r bin
@@ -242,12 +242,12 @@ build: bundle docker-build
 publish: docker-push
 .PHONY: publish
 
-# Initialize the stack bundle folder
-$(STACK_PACKAGE_REGISTRY):
-	mkdir -p $(STACK_PACKAGE_REGISTRY)/resources
-	touch $(STACK_PACKAGE_REGISTRY)/app.yaml $(STACK_PACKAGE_REGISTRY)/install.yaml
+# Initialize the package bundle folder
+$(PACKAGE_REGISTRY):
+	mkdir -p $(PACKAGE_REGISTRY)/resources
+	touch $(PACKAGE_REGISTRY)/app.yaml $(PACKAGE_REGISTRY)/install.yaml
 
-bundle: $(STACK_PACKAGE_REGISTRY)
+bundle: $(PACKAGE_REGISTRY)
 	# Copy CRDs over
 	#
 	# The reason this looks complicated is because it is
@@ -258,15 +258,15 @@ bundle: $(STACK_PACKAGE_REGISTRY)
 	# be to cat all of the files into a single crd.yaml.
 	find $(CRD_DIR) -type f -name '*.yaml' | \
 		while read filename ; do cat $$filename > \
-		$(STACK_PACKAGE_REGISTRY)/resources/$$( basename $$(echo $$filename | sed s/.yaml$$/.crd.yaml/)) \
+		$(PACKAGE_REGISTRY)/resources/$$( basename $$(echo $$filename | sed s/.yaml$$/.crd.yaml/)) \
 		; done
 
-	cp -r $(STACK_PACKAGE_REGISTRY_SOURCE)/* $(STACK_PACKAGE_REGISTRY)
+	cp -r $(PACKAGE_REGISTRY_SOURCE)/* $(PACKAGE_REGISTRY)
 .PHONY: bundle
 
 # A local docker registry can be used to publish and consume images locally, which
 # is convenient during development, as it simulates the whole lifecycle of the
-# Stack, end-to-end.
+# Package, end-to-end.
 docker-local-registry:
 	[ $$( docker ps --filter name=registry --filter status=running --last 1 --quiet | wc -l ) -eq 1 ] || \
 		docker run -d -p 5000:5000 --restart=always --name registry registry:2
@@ -275,19 +275,19 @@ docker-local-registry:
 # Tagging the image with the address of the local registry is a necessary step of
 # publishing the image to the local registry.
 docker-local-tag: docker-local-registry
-	docker tag ${STACK_IMG} localhost:5000/${STACK_IMG}
+	docker tag ${PACKAGE_IMG} localhost:5000/${PACKAGE_IMG}
 .PHONY: docker-local-tag
 
 # When we are developing locally, this target will publish our container image
 # to the local registry.
 docker-local-push: docker-local-tag docker-local-registry
-	docker push localhost:5000/${STACK_IMG}
+	docker push localhost:5000/${PACKAGE_IMG}
 .PHONY: docker-local-push
 
 # Sooo ideally this wouldn't be a single line, but the idea here is that when we're
 # developing locally, we want to use our locally-published container image for the
-# Stack's controller container. The container image is specified in the install
-# yaml for the Stack. This means we need two versions of the install:
+# Package's controller container. The container image is specified in the install
+# yaml for the Package. This means we need two versions of the install:
 #
 # * One for "regular", production publishing
 # * One for development
@@ -295,64 +295,64 @@ docker-local-push: docker-local-tag docker-local-registry
 # The way this has been implemented here is by having the base install yaml be the
 # production install, with a yaml patch on the side for use during development.
 # *This* make recipe creates the development install yaml, which requires doing
-# some patching of the original install and putting it back in the stack package
-# directory. It's done here as a post-processing step after the stack package
+# some patching of the original install and putting it back in the package
+# directory. It's done here as a post-processing step after the package
 # has been generated, which is why the output to a copy and then rename step is
 # needed. This is not the only way to implement this functionality.
 #
 # The implementation here is general, in the sense that any other yamls in the
 # overrides directory will be patched into their corresponding files in the
-# stack package. It assumes that all of the yamls are only one level deep.
-stack-local-build: bundle
+# package. It assumes that all of the yamls are only one level deep.
+package-local-build: bundle
 	find $(LOCAL_OVERRIDES_DIR) -maxdepth 1 -type f -name '*.yaml' | \
 		while read filename ; do \
-			kubectl patch --dry-run --filename $(STACK_PACKAGE_REGISTRY)/$$( basename $$filename ) \
-				--type strategic --output yaml --patch "$$( cat $$filename )" > $(STACK_PACKAGE_REGISTRY)/$$( basename $$filename ).new && \
-			mv $(STACK_PACKAGE_REGISTRY)/$$( basename $$filename ).new $(STACK_PACKAGE_REGISTRY)/$$( basename $$filename ) \
+			kubectl patch --dry-run --filename $(PACKAGE_REGISTRY)/$$( basename $$filename ) \
+				--type strategic --output yaml --patch "$$( cat $$filename )" > $(PACKAGE_REGISTRY)/$$( basename $$filename ).new && \
+			mv $(PACKAGE_REGISTRY)/$$( basename $$filename ).new $(PACKAGE_REGISTRY)/$$( basename $$filename ) \
 		; done
-.PHONY: stack-local-build
+.PHONY: package-local-build
 
 # Convenience for building a local bundle by running the steps in the right order and with a single command
-local-build: stack-local-build docker-build docker-local-push
+local-build: package-local-build docker-build docker-local-push
 .PHONY: local-build
 
-# Install a locally-built stack using the sample stack installation CR
-stack-install:
+# Install a locally-built package using the sample stack installation CR
+package-install:
 	kubectl apply -f $(CONFIG_SAMPLES_DIR)/local.install.stack.yaml
-.PHONY: stack-install
+.PHONY: package-install
 
-stack-uninstall:
+package-uninstall:
 	kubectl delete -f $(CONFIG_SAMPLES_DIR)/local.install.stack.yaml
-.PHONY: stack-uninstall
+.PHONY: package-uninstall
 
 # Build the docker image
 docker-build: bundle
-	docker build --file stack.Dockerfile . -t ${STACK_IMG}
+	docker build --file package.Dockerfile . -t ${PACKAGE_IMG}
 .PHONY: docker-build
 
 docker-push:
-	docker push ${STACK_IMG}
+	docker push ${PACKAGE_IMG}
 .PHONY: docker-push
 EOF
-  echo 'Created stack.Makefile' >&2
+  echo 'Created package.Makefile' >&2
 
 
   if [ -f .gitignore ] ; then
-    grep -q 'stack-package/' .gitignore || cat >>.gitignore <<EOF
+    grep -q 'package/' .gitignore || cat >>.gitignore <<EOF
 
-# stack-package is a generated folder, and can be considered an intermediate
+# package is a generated folder, and can be considered an intermediate
 # build artifact. We don't need to check it into version control.
-stack-package/
+package/
 EOF
-    echo 'Made sure stack-package/ is in .gitignore' >&2
+    echo 'Made sure package/ is in .gitignore' >&2
   else
-    echo 'No .gitignore found; not adding stack-package/ to .gitignore' >&2
+    echo 'No .gitignore found; not adding package/ to .gitignore' >&2
   fi
 }
 
 cd -- "${INIT_DIR}"
 
-check_for_existing_stack || exit 1
+check_for_existing_package || exit 1
 
 create_dirs
 create_manifest
