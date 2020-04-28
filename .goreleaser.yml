@@ -102,7 +102,7 @@ archives:
   # goreleaser will bundle other things into our archive for us, so we're using
   # that functionality to bundle our bash scripts into the archive.
   files:
-    - bin/kubectl-crossplane-*
+    - bin/kubectl-crossplane*
     - LICENSE
 
 checksum:

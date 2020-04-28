@@ -37,4 +37,4 @@ else
   curl -sL https://github.com/crossplane/crossplane-cli/releases/download/"${RELEASE}"/crossplane-cli_"${RELEASE}"_"${PLATFORM}"_amd64.tar.gz | tar -xz -v --strip 1 -C "${PREFIX}"/bin
 fi
 
-chmod +x "${PREFIX}"/bin/kubectl-crossplane-*
+chmod +x "${PREFIX}"/bin/kubectl-crossplane*

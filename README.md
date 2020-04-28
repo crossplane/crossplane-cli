@@ -44,14 +44,14 @@ If you followed the installation process above, you can remove
 everything with:
 
 ```
-rm /usr/local/bin/kubectl-crossplane-*
+rm /usr/local/bin/kubectl-crossplane*
 ```
 
 Or, if you customized the installation prefix:
 
 ```
 PREFIX=/thing
-rm "${PREFIX}"/bin/kubectl-crossplane-*
+rm "${PREFIX}"/bin/kubectl-crossplane*
 ```
 
 ### Uninstalling from source
