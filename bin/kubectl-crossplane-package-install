@@ -7,7 +7,7 @@ function usage {
   # would be overridden more often than package image source, but I kept going back and
   # forth on that originally. Overriding the source is very useful when developing a
   # package locally, for example.
-  echo "Usage: kubectl crossplane package install [-h|--help] [-c|--cluster] [-n|--namespace NAMESPACE] PACKAGE_IMAGE_NAME [PACKAGE_NAME [PACKAGE_IMAGE_SOURCE]]" >&2
+  echo "Usage: kubectl crossplane package install [-h|--help] [-c|--cluster] [-n|--namespace NAMESPACE] [--imagePullSecret SECRET_NAME] PACKAGE_IMAGE_NAME [PACKAGE_NAME [PACKAGE_IMAGE_SOURCE]]" >&2
   echo "" >&2
   echo "PACKAGE_IMAGE_NAME is the name of the package in the registry to install." >&2
   echo "If the PACKAGE_NAME is not provided, the package name will be the PACKAGE_IMAGE_NAME with any '/' characters" >&2
@@ -23,6 +23,8 @@ function usage {
 CLUSTER_STACK=""
 CLUSTER_OPT=""
 NAMESPACE_OPT=""
+IMAGE_PULL_SECRET=""
+IMAGE_PULL_SECRET_OPT=""
 POSITIONAL=()
 
 while [[ $# -gt 0 ]]; do
@@ -42,6 +44,17 @@ while [[ $# -gt 0 ]]; do
     -n|--namespace)
       NAMESPACE="$2"
       NAMESPACE_OPT="--namespace=${NAMESPACE}"
+      shift
+      shift
+      ;;
+    --imagePullSecret=*)
+      IMAGE_PULL_SECRET="${opt#*=}"
+      IMAGE_PULL_SECRET_OPT="--imagePullSecret=${IMAGE_PULL_SECRET}"
+      shift;
+      ;;
+    --imagePullSecret)
+      IMAGE_PULL_SECRET="$2"
+      IMAGE_PULL_SECRET_OPT="--imagePullSecret=${IMAGE_PULL_SECRET}"
       shift
       shift
       ;;
@@ -81,7 +94,7 @@ KUBEY_PACKAGE_IMAGE_NAME=$( echo "${PACKAGE_IMAGE_NAME}" | tr '/' '-' | sed 's/:
 # by passing arguments
 PACKAGE_NAME="${2:-${KUBEY_PACKAGE_IMAGE_NAME}}"
 
-kubectl crossplane package generate-install ${CLUSTER_OPT} "$@" | kubectl apply ${NAMESPACE_OPT} -f -
+kubectl crossplane package generate-install ${CLUSTER_OPT} ${IMAGE_PULL_SECRET_OPT} "$@" | kubectl apply ${NAMESPACE_OPT} -f -
 # Printing out the stack install object from the cluster may be useful
 # for whoever ran this command, and there's no other output anyway, so
 # we might as well.
