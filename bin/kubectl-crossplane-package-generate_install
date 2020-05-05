@@ -7,7 +7,7 @@ function usage {
   # would be overridden more often than package image source, but I kept going back and
   # forth on that originally. Overriding the source is very useful when developing a
   # package locally, for example.
-  echo "Usage: kubectl crossplane package generate-install [-h|--help] [-c|--cluster] PACKAGE_IMAGE_NAME [PACKAGE_NAME [PACKAGE_IMAGE_SOURCE]]" >&2
+  echo "Usage: kubectl crossplane package generate-install [-h|--help] [-c|--cluster] [--imagePullSecret SECRET_NAME] PACKAGE_IMAGE_NAME [PACKAGE_NAME [PACKAGE_IMAGE_SOURCE]]" >&2
   echo "" >&2
   echo "PACKAGE_IMAGE_NAME is the name of the package in the registry to install." >&2
   echo "If the PACKAGE_NAME is not provided, the package name will be the PACKAGE_IMAGE_NAME with any '/' characters" >&2
@@ -17,27 +17,52 @@ function usage {
   echo "-c, --cluster: generate a ClusterStackInstall for Packages with Cluster permission scope" >&2
 }
 
-function check_help {
-  if [ "${1}" == "-h" -o "${1}" == "--help" ] ; then
-    usage
-    exit 1
-  fi
-}
+CLUSTER_STACK=""
+IMAGE_PULL_SECRET=""
+POSITIONAL=()
 
-check_help "${1}"
+while [[ $# -gt 0 ]]; do
+  opt="$1"
 
-if [[ $# -lt 1 ]] ; then
+  case $opt in
+    -c|--cluster)
+      CLUSTER_STACK="Cluster"
+      shift
+      ;;
+    --imagePullSecret=*)
+      IMAGE_PULL_SECRET="${opt#*=}"
+      shift;
+      ;;
+    --imagePullSecret)
+      IMAGE_PULL_SECRET="$2"
+      shift
+      shift
+      ;;
+    -h|--help)
+      usage
+      exit 1
+      ;;
+    -*)
+      echo "Unknown argument: $opt" >&2
+      usage
+      exit 1
+      ;;
+    *)
+      POSITIONAL+=("$1")
+      shift
+      ;;
+  esac
+done
+
+if [ "${#POSITIONAL[@]}" -eq "0" ]; then
+  echo "Missing arguments" >&2
   usage
   exit 1
 fi
 
-CLUSTER_OPT="${1}"
-if [ "${CLUSTER_OPT}" == "-c" -o "${CLUSTER_OPT}" == "--cluster" ]; then
-  CLUSTER_STACK="Cluster"
-  shift
-else
-  CLUSTER_STACK=""
-fi
+# Reset the positional parameters ($1, ..) from the array of arguments
+# that didn't match our known options
+set -- "${POSITIONAL[@]}"
 
 PACKAGE_IMAGE_NAME="${1}"
 # For kubernetes fields, we aren't able to use slashes, and
@@ -62,6 +87,23 @@ EOF
 )
 fi
 
+SECRET_SNIPPET=""
+if [[ -n "${IMAGE_PULL_SECRET}" ]]; then
+  # This chunk of code is used to set the "imagePullSecrets: " field
+  # to use the source argument if it was provided, but to
+  # exclude the field entirely if it was not provided.
+  SECRET_SNIPPET=$( cat <<EOF
+  imagePullSecrets:
+    - name: "${IMAGE_PULL_SECRET}"
+EOF
+)
+fi
+
+newline=""
+if [[ -n "${SECRET_SNIPPET}" ]]; then
+  newline=$'\n'
+fi
+
 INSTALL_YAML="$( cat <<EOF
 apiVersion: stacks.crossplane.io/v1alpha1
 kind: ${CLUSTER_STACK}StackInstall
@@ -69,7 +111,7 @@ metadata:
   name: "${PACKAGE_NAME}"
 spec:
   package: "${PACKAGE_IMAGE_NAME}"
-${SOURCE_SNIPPET}
+${SECRET_SNIPPET}${newline}${SOURCE_SNIPPET}
 EOF
 )"
 
