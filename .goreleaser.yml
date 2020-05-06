@@ -5,9 +5,11 @@
 # - Set the GITHUB_TOKEN environment variable
 # - Tag a commit with a release, such as 'v0.2.0'
 # - Push the tag
-# - Run `gorelease release` from the root of the repo.
-# - Follow the link which is printed to edit the draft release,
-#   then publish the release.
+# - Run `goreleaser release` from the root of the repo.
+# - Follow the link which is printed to edit the draft release, then publish the
+#   release. Ensure that the "pre-release" checkbox is **unchecked** so that it
+#   will be published as an official release, which the bootstrap.sh script's
+#   "latest" release fetching depends on.
 #
 # NOTE: goreleaser will release to the github repo which is set
 # as the 'origin' remote.

@@ -62,6 +62,11 @@ If you have the source repository checked out:
 make uninstall
 ```
 
+## Release
+
+To release a new version of `crossplane-cli`, follow the instructions in
+[`.goreleaser.yml`](https://github.com/crossplane/crossplane-cli/blob/master/.goreleaser.yml).
+
 ## Usage
 
 ### Package commands
