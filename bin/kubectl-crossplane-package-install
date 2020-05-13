@@ -20,7 +20,7 @@ function usage {
   echo 'For more advanced usage, see the lower-level `kubectl crossplane package generate-install` command.' >&2
 }
 
-CLUSTER_STACK=""
+CLUSTER_PACKAGE=""
 CLUSTER_OPT=""
 NAMESPACE_OPT=""
 IMAGE_PULL_SECRET=""
@@ -32,7 +32,7 @@ while [[ $# -gt 0 ]]; do
 
   case $opt in
     -c|--cluster)
-      CLUSTER_STACK="cluster"
+      CLUSTER_PACKAGE="cluster"
       CLUSTER_OPT="$opt"
       shift
       ;;
@@ -95,7 +95,7 @@ KUBEY_PACKAGE_IMAGE_NAME=$( echo "${PACKAGE_IMAGE_NAME}" | tr '/' '-' | sed 's/:
 PACKAGE_NAME="${2:-${KUBEY_PACKAGE_IMAGE_NAME}}"
 
 kubectl crossplane package generate-install ${CLUSTER_OPT} ${IMAGE_PULL_SECRET_OPT} "$@" | kubectl apply ${NAMESPACE_OPT} -f -
-# Printing out the stack install object from the cluster may be useful
+# Printing out the package install object from the cluster may be useful
 # for whoever ran this command, and there's no other output anyway, so
 # we might as well.
-kubectl get ${NAMESPACE_OPT} -o yaml "${CLUSTER_STACK}"stackinstall "${PACKAGE_NAME}"
+kubectl get ${NAMESPACE_OPT} -o yaml "${CLUSTER_PACKAGE}"packageinstall "${PACKAGE_NAME}"

@@ -4,7 +4,7 @@ set -e
 
 function usage {
   # The reason for putting package name before package image source is it seems like package name
-  # would be overridden more often than stack image source, but I kept going back and
+  # would be overridden more often than package image source, but I kept going back and
   # forth on that originally. Overriding the source is very useful when developing a
   # package locally, for example.
   echo "Usage: kubectl crossplane package list [-h|--help] [OPTIONS]" >&2
@@ -32,4 +32,4 @@ if [[ $# -gt 0 ]]; then
   ALL_NAMESPACES=
 fi
 
-kubectl get stackinstalls.stacks.crossplane.io,clusterstackinstalls.stacks.crossplane.io ${ALL_NAMESPACES} "${@}"
+kubectl get packageinstalls.packages.crossplane.io,clusterpackageinstalls.packages.crossplane.io ${ALL_NAMESPACES} "${@}"

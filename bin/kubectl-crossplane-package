@@ -5,7 +5,7 @@ set -e
 function usage {
   echo "Usage: kubectl crossplane [-h|--help] package [COMMAND] [OPTION]... [ARGUMENT]..." >&2
   echo "" >&2
-  echo "Commands (Stack):" >&2
+  echo "Commands (Package):" >&2
   echo "  build" >&2
   echo "  generate-install" >&2
   echo "  init" >&2
