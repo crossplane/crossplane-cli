@@ -81,7 +81,7 @@ func (o *Application) GetRelated(filterByLabel func(metav1.GroupVersionKind, str
 			Kind: k,
 		}, o.instance.GetNamespace(), getNestedLabelSelector(obj, fieldsAppResourceMatchLabels...))
 		// Ignore NoMatchError since all resources/kinds may not be available on the API,
-		// e.g. ignore if AWS stack is not installed when working GCP only.
+		// e.g. ignore if AWS package is not installed when working GCP only.
 		if err != nil && !meta.IsNoMatchError(err) {
 			return related, err
 		}

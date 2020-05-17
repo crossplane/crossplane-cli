@@ -14,10 +14,10 @@ function usage {
   echo "converted to '-' characters." >&2
   echo "" >&2
   echo "-h, --help: Print usage" >&2
-  echo "-c, --cluster: generate a ClusterStackInstall for Packages with Cluster permission scope" >&2
+  echo "-c, --cluster: generate a ClusterPackageInstall for Packages with Cluster permission scope" >&2
 }
 
-CLUSTER_STACK=""
+CLUSTER_PACKAGE=""
 IMAGE_PULL_SECRET=""
 POSITIONAL=()
 
@@ -26,7 +26,7 @@ while [[ $# -gt 0 ]]; do
 
   case $opt in
     -c|--cluster)
-      CLUSTER_STACK="Cluster"
+      CLUSTER_PACKAGE="Cluster"
       shift
       ;;
     --imagePullSecret=*)
@@ -105,8 +105,8 @@ if [[ -n "${SECRET_SNIPPET}" ]]; then
 fi
 
 INSTALL_YAML="$( cat <<EOF
-apiVersion: stacks.crossplane.io/v1alpha1
-kind: ${CLUSTER_STACK}StackInstall
+apiVersion: packages.crossplane.io/v1alpha1
+kind: ${CLUSTER_PACKAGE}PackageInstall
 metadata:
   name: "${PACKAGE_NAME}"
 spec:

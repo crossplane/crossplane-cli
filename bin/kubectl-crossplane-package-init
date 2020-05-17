@@ -11,7 +11,7 @@ function usage {
   echo "DIRECTORY defaults to the current directory." >&2
   echo "" >&2
   echo "-f, --force: force init when a previous 'package init' is detected" >&2
-  echo "-c, --cluster: use the Cluster Package permission scope and generate ClusterStackInstall examples" >&2
+  echo "-c, --cluster: use the Cluster Package permission scope and generate ClusterPackageInstall examples" >&2
   echo "-h, --help: Print usage" >&2
 }
 
@@ -38,11 +38,11 @@ fi
 
 CLUSTER_OPT=${1}
 if [ "${CLUSTER_OPT}" == "-c" -o "${CLUSTER_OPT}" == "--cluster" ]; then
-  CLUSTER_STACK="Cluster"
+  CLUSTER_PACKAGE="Cluster"
   PACKAGE_SCOPE="Cluster"
   shift
 else
-  CLUSTER_STACK=""
+  CLUSTER_PACKAGE=""
   PACKAGE_SCOPE="Namespaced"
 fi
 
@@ -111,8 +111,8 @@ spec:
       containers:
       - name: "${KUBEY_PACKAGE_NAME}-controller"
         # The `image:` field is optional. If omitted, it will be
-        # filled in by the stack manager, using the same image
-        # name and tag as the package on the StackInstall object.
+        # filled in by the package manager, using the same image
+        # name and tag as the package on the PackageInstall object.
         # We recommend omitting it unless you know you need it.
         #
         # image: "${PACKAGE_IMAGE_NAME}"
@@ -131,28 +131,28 @@ EOF
 
 function create_samples {
   mkdir -p config/package/samples
-  cat > config/package/samples/local.install.stack.yaml <<EOF
+  cat > config/package/samples/local.install.package.yaml <<EOF
 ---
-apiVersion: stacks.crossplane.io/v1alpha1
-kind: ${CLUSTER_STACK}StackInstall
+apiVersion: packagess.crossplane.io/v1alpha1
+kind: ${CLUSTER_PACKAGE}PackageInstall
 metadata:
   name: "${KUBEY_PACKAGE_NAME}"
 spec:
   source: localhost:5000
   package: "${PACKAGE_IMAGE_NAME}"
 EOF
-  echo 'Created config/package/samples/local.install.stack.yaml' >&2
+  echo 'Created config/package/samples/local.install.package.yaml' >&2
 
-  cat > config/package/samples/install.stack.yaml <<EOF
+  cat > config/package/samples/install.package.yaml <<EOF
 ---
-apiVersion: stacks.crossplane.io/v1alpha1
-kind: ${CLUSTER_STACK}StackInstall
+apiVersion: packages.crossplane.io/v1alpha1
+kind: ${CLUSTER_PACKAGE}PackageInstall
 metadata:
   name: "${KUBEY_PACKAGE_NAME}"
 spec:
   package: "${PACKAGE_IMAGE_NAME}"
 EOF
-  echo 'Created config/package/samples/install.stack.yaml' >&2
+  echo 'Created config/package/samples/install.package.yaml' >&2
 
 }
 
@@ -185,7 +185,7 @@ COPY controllers/ controllers/
 RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 GO111MODULE=on go build -a -o manager main.go
 
 # Use alpine as a minimal base image to package the manager binary
-# Alpine is used instead of distroless because the stack manager expects things like `cp` to exist
+# Alpine is used instead of distroless because the package manager expects things like `cp` to exist
 FROM alpine:3.7
 WORKDIR /
 COPY package /
@@ -316,13 +316,13 @@ package-local-build: bundle
 local-build: package-local-build docker-build docker-local-push
 .PHONY: local-build
 
-# Install a locally-built package using the sample stack installation CR
+# Install a locally-built package using the sample package installation CR
 package-install:
-	kubectl apply -f $(CONFIG_SAMPLES_DIR)/local.install.stack.yaml
+	kubectl apply -f $(CONFIG_SAMPLES_DIR)/local.install.package.yaml
 .PHONY: package-install
 
 package-uninstall:
-	kubectl delete -f $(CONFIG_SAMPLES_DIR)/local.install.stack.yaml
+	kubectl delete -f $(CONFIG_SAMPLES_DIR)/local.install.package.yaml
 .PHONY: package-uninstall
 
 # Build the docker image

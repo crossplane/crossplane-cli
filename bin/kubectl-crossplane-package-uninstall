@@ -28,13 +28,13 @@ fi
 
 CLUSTER_OPT=${1}
 if [ "${CLUSTER_OPT}" == "-c" -o "${CLUSTER_OPT}" == "--cluster" ]; then
-  CLUSTER_STACK="cluster"
+  CLUSTER_PACKAGE="cluster"
   shift
 else
-  CLUSTER_STACK=""
+  CLUSTER_PACKAGE=""
 fi
 
 PACKAGE_NAME="${1}"
 shift
 
-kubectl delete "${CLUSTER_STACK}"stackinstall "${PACKAGE_NAME}" "$@"
+kubectl delete "${CLUSTER_PACKAGE}"packageinstall "${PACKAGE_NAME}" "$@"
