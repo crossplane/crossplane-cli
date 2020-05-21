@@ -8,7 +8,7 @@ Here's the one-liner to install latest released version:
 curl -sL https://raw.githubusercontent.com/crossplane/crossplane-cli/master/bootstrap.sh | bash
 ```
 
-The behavior is customizable via environment variables:
+You can install a specific release with the following command:
 
 ```
 RELEASE=v0.2.0
