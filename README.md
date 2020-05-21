@@ -12,21 +12,8 @@ The behavior is customizable via environment variables:
 
 ```
 RELEASE=v0.2.0
-PREFIX=${HOME}
-curl -sL https://raw.githubusercontent.com/crossplane/crossplane-cli/"${RELEASE}"/bootstrap.sh | env PREFIX=${PREFIX} RELEASE=${RELEASE} bash
+curl -sL https://raw.githubusercontent.com/crossplane/crossplane-cli/"${RELEASE}"/bootstrap.sh | RELEASE=${RELEASE} bash
 ```
-
-You can get the latest, bleeding-edge versions of the `package` commands
-by setting `RELEASE` as `master`.
-
-```
-RELEASE=master && curl -sL https://raw.githubusercontent.com/crossplane/crossplane-cli/"${RELEASE}"/bootstrap.sh | RELEASE=${RELEASE} bash
-```
-
-But please note, the `trace` command will not be installed in this case,
-because it's a built binary and isn't set up to be easily downloaded
-from `master`. To use `trace` from `master`, we recommend building and
-installing from source.
 
 ### Installing from source
 
@@ -45,21 +32,6 @@ everything with:
 
 ```
 rm /usr/local/bin/kubectl-crossplane*
-```
-
-Or, if you customized the installation prefix:
-
-```
-PREFIX=/thing
-rm "${PREFIX}"/bin/kubectl-crossplane*
-```
-
-### Uninstalling from source
-
-If you have the source repository checked out:
-
-```
-make uninstall
 ```
 
 ## Release
